@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 
-import PartnersAndResources from "../components/PartnersAndResources";
+import PartnersAndResources from "../components/PartnersandResources";
 import AgendaSection from "../components/Agenda";
 import TicketPricingFAQFooter from "../components/Ticketfooter";
 import ConferenceFeaturedSection from "../components/FeaturedSection";
