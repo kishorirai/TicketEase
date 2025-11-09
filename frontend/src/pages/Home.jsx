@@ -64,7 +64,7 @@ export default function ConferenceLanding() {
         <ArrowRight className="w-5 h-5" />
       </button>
 
-      {/* ✅ Reusable Header Section */}
+     
    
 
       {/* Hero Section */}
@@ -182,7 +182,7 @@ export default function ConferenceLanding() {
                 >
                   <div
                     className="rounded-xl overflow-hidden mb-4 relative"
-                    style={{ backgroundColor: speaker.bgColor, height: '540px' }}
+                    style={{ backgroundColor: speaker.bgColor, height: '400px' }}
                   >
                     <img
                       src={speaker.image}
