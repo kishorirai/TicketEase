@@ -1,9 +1,8 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000/api"; // Adjust for your backend port/host as needed
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchEvents = () => axios.get(`${API_BASE}/events`);
 
-// ADD THIS EXPORT:
 export const fetchEventDetails = (eventId) =>
-  axios.get(`${API_BASE}/events/${eventId}`).then(res => res.data);
+  axios.get(`${API_BASE}/events/${eventId}`).then((res) => res.data);

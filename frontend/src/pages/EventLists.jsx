@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { MapPin, Calendar, Clock, Users, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { fetchEvents } from "./api"; // <-- Make sure this calls your backend /api/events
+import { fetchEvents } from "./api"; 
 
 const EventListingPage = () => {
   const navigate = useNavigate();

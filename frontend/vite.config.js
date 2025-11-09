@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite' // kept as requested
+import tailwindcss from '@tailwindcss/vite' 
 
 // Dev server proxy forwards /api/* to your backend on port 5000.
 export default defineConfig({
