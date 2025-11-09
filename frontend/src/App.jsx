@@ -6,7 +6,7 @@ import Home from './pages/Home';
 import EventListingPage from './pages/EventLists';
 import EventDetails from './pages/EventDetails';
 import BookingFlow from './pages/Bookings';
-import AdminDashboard from './pages/AdminDashboard'; // ✅ Import added
+import AdminDashboard from './pages/AdminDashboard'; 
 
 function App() {
   return (
