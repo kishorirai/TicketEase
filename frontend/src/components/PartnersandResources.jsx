@@ -4,11 +4,10 @@ import { MdSecurity } from "react-icons/md";
 import { SiLogitech, SiReact } from "react-icons/si";
 import { GiTreeGrowth } from "react-icons/gi";
 
-// Demo images - replace with your actual conference images
-const conf1 = "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop";
-const conf2 = "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&h=600&fit=crop";
-const conf3 = "https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&h=600&fit=crop";
-const conf4 = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop";
+// Demo images - event themed for ticket booking website
+const conf1 = "https://images.unsplash.com/photo-1506157786151-b8491531f063?w=800&h=600&fit=crop"; // concert crowd
+const conf2 = "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?w=800&h=600&fit=crop"; // live band performance
+const conf3 = "https://images.unsplash.com/photo-1518972559570-7cc1309f3229?w=800&h=600&fit=crop"; // outdoor music festival crowd
 
 
 export default function PartnersAndResources() {
@@ -63,7 +62,7 @@ export default function PartnersAndResources() {
     { icon: FaLeaf, position: 'bottom-right' }
   ];
 
-  const images = [conf1, conf2, conf3, conf4];
+  const images = [conf1, conf2, conf3];
 
   return (
     <>
@@ -428,11 +427,12 @@ export default function PartnersAndResources() {
         <div className="container mx-auto px-8 py-20">
           <div className={`text-center mb-10 resources-heading ${resourcesVisible ? 'visible' : ''}`}>
             <h2 className="text-4xl md:text-5xl font-black mb-2" style={{ color: '#FFE302' }}>
-              Resources From Past Conferences
-            </h2>
-            <p className="text-md md:text-lg opacity-90" style={{color: "white"}}>
-              Explore our lineup of keynote speakers and industry leaders who will inspire and enlighten at the conference.
-            </p>
+  Top Events & Exclusive Offers
+</h2>
+<p className="text-md md:text-lg opacity-90" style={{ color: 'white' }}>
+  Discover trending concerts, sports matches, and live shows near you. Book tickets easily and never miss out on your favorite events!
+</p>
+
           </div>
           
           {/* Horizontal scrollable gallery with fisheye effect */}

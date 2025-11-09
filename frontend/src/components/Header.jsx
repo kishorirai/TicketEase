@@ -9,7 +9,7 @@ export default function Header() {
       <div className="container mx-auto px-8 py-4 flex justify-between items-center">
         {/* Logo */}
         <div className="text-white text-3xl font-black tracking-tight">
-          SUMMITRA
+          TICKETEASE
         </div>
 
         {/* Right Section */}
