@@ -159,10 +159,10 @@ export default function ConferenceLanding() {
           <div className="overflow-x-auto pb-8 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="inline-flex gap-6 min-w-max items-end">
               {[
-                { id: 1, title: "Summer Music Festival 2025", location: "New York", date: "2025-06-15", time: "18:00", image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1000&h=600&fit=crop", price: 89, totalSeats: 500, bookedSeats: 450 },
-                { id: 2, title: "Tech Conference 2025", location: "San Francisco", date: "2025-07-20", time: "09:00", image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1000&h=600&fit=crop", price: 199, totalSeats: 300, bookedSeats: 275 },
-                { id: 3, title: "Food & Wine Festival", location: "Los Angeles", date: "2025-08-10", time: "12:00", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1000&h=600&fit=crop", price: 75, totalSeats: 200, bookedSeats: 180 },
-                { id: 4, title: "Art Gallery Exhibition", location: "Chicago", date: "2025-07-05", time: "10:00", image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?w=1000&h=600&fit=crop", price: 35, totalSeats: 150, bookedSeats: 45 },
+                { id: 1, title: "Summer Music Festival 2025", location: "New York", date: "2025-06-15", time: "18:00", image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1000&h=600&fit=crop", price: 99, totalSeats: 500, bookedSeats: 450 },
+                { id: 2, title: "Tech Conference 2025", location: "San Francisco", date: "2025-07-20", time: "09:00", image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1000&h=600&fit=crop", price: 109, totalSeats: 300, bookedSeats: 275 },
+                { id: 3, title: "Food & Wine Festival", location: "Los Angeles", date: "2025-08-10", time: "12:00", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1000&h=600&fit=crop", price: 175, totalSeats: 200, bookedSeats: 180 },
+                { id: 4, title: "Art Gallery Exhibition", location: "Chicago", date: "2025-07-05", time: "10:00", image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?w=1000&h=600&fit=crop", price: 135, totalSeats: 150, bookedSeats: 45 },
               ].map((event, index) => {
                 const seatsLeft = event.totalSeats - event.bookedSeats;
                 return (
@@ -175,7 +175,7 @@ export default function ConferenceLanding() {
                       <p className="text-gray-400 text-sm mb-1">📍 {event.location}</p>
                       <p className="text-gray-400 text-sm mb-2">🗓 {event.date} • ⏰ {event.time}</p>
                       <p className="text-yellow-400 text-sm font-semibold mb-2">{seatsLeft > 0 ? `${seatsLeft} seats left` : "Sold Out"}</p>
-                      <p className="text-white text-lg font-bold mb-3">₹{event.price}</p>
+                      <p className="text-white text-lg font-bold mb-3">${event.price}</p>
                       <button
                         onClick={() => navigate("/events")}
                         className="w-full bg-white text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"

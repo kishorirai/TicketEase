@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
-import { MapPin, Calendar, Clock, Users, Search } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import { MapPin, Calendar, Clock, Users, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { fetchEvents } from "./api"; // <-- Make sure this calls your backend /api/events
 
 const EventListingPage = () => {
   const navigate = useNavigate();
@@ -9,61 +10,33 @@ const EventListingPage = () => {
   const [selectedLocation, setSelectedLocation] = useState("All");
   const [selectedDate, setSelectedDate] = useState("All");
 
-  const events = [
-    {
-      id: 1,
-      title: "Summer Music Festival 2025",
-      location: "New York",
-      date: "2025-06-15",
-      time: "18:00",
-      image:
-        "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1000&h=600&fit=crop",
-      price: 89,
-      totalSeats: 500,
-      bookedSeats: 450,
-    },
-    {
-      id: 2,
-      title: "Tech Conference 2025",
-      location: "San Francisco",
-      date: "2025-07-20",
-      time: "09:00",
-      image:
-        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1000&h=600&fit=crop",
-      price: 199,
-      totalSeats: 300,
-      bookedSeats: 275,
-    },
-    {
-      id: 3,
-      title: "Food & Wine Festival",
-      location: "Los Angeles",
-      date: "2025-08-10",
-      time: "12:00",
-      image:
-        "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1000&h=600&fit=crop",
-      price: 75,
-      totalSeats: 200,
-      bookedSeats: 180,
-    },
-    {
-      id: 4,
-      title: "Art Gallery Exhibition",
-      location: "Chicago",
-      date: "2025-07-05",
-      time: "10:00",
-      image:
-        "https://images.unsplash.com/photo-1531058020387-3be344556be6?w=1000&h=600&fit=crop",
-      price: 35,
-      totalSeats: 150,
-      bookedSeats: 45,
-    },
-  ];
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const locations = ["All", ...new Set(events.map((e) => e.location))];
-  const dates = ["All", ...new Set(events.map((e) => e.date))];
+  // Track current image index per event for carousel
+  const [currentImageIndex, setCurrentImageIndex] = useState({});
 
-  // Filter Logic
+  // Fetch events from backend
+  useEffect(() => {
+    setLoading(true);
+    fetchEvents()
+      .then((res) => setEvents(res.data))
+      .catch((err) => setError(err.message || "Error loading events"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Generate filter options
+  const locations = useMemo(
+    () => ["All", ...Array.from(new Set(events.map((e) => e.location)))],
+    [events]
+  );
+  const dates = useMemo(
+    () => ["All", ...Array.from(new Set(events.map((e) => e.date)))],
+    [events]
+  );
+
+  // Filtered events
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
       const matchesSearch = event.title
@@ -74,14 +47,30 @@ const EventListingPage = () => {
       const matchesDate = selectedDate === "All" || event.date === selectedDate;
       return matchesSearch && matchesLocation && matchesDate;
     });
-  }, [searchQuery, selectedLocation, selectedDate]);
+  }, [events, searchQuery, selectedLocation, selectedDate]);
 
-  // Helper: seat availability
-  const getSeatStatus = (totalSeats, bookedSeats) => {
-    const available = totalSeats - bookedSeats;
+  // Seat availability helper
+  const getSeatStatus = (event) => {
+    const total = event.total_seats ?? event.totalSeats ?? 0;
+    const available =
+      event.available_seats ?? total - (event.booked_seats ?? event.bookedSeats ?? 0);
     if (available <= 0) return { text: "Sold Out", color: "text-red-600" };
     if (available < 20) return { text: `Only ${available} left!`, color: "text-orange-500" };
     return { text: `${available} available`, color: "text-green-600" };
+  };
+
+  // Handle carousel navigation
+  const nextImage = (eventId, length) => {
+    setCurrentImageIndex((prev) => ({
+      ...prev,
+      [eventId]: (prev[eventId] ?? 0 + 1) % length,
+    }));
+  };
+  const prevImage = (eventId, length) => {
+    setCurrentImageIndex((prev) => ({
+      ...prev,
+      [eventId]: (prev[eventId] ?? 0 - 1 + length) % length,
+    }));
   };
 
   return (
@@ -97,7 +86,6 @@ const EventListingPage = () => {
 
         {/* Search + Filters */}
         <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow p-6 mb-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Search */}
           <div className="relative col-span-1 md:col-span-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5" />
             <input
@@ -108,8 +96,6 @@ const EventListingPage = () => {
               className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
             />
           </div>
-
-          {/* Location Filter */}
           <div>
             <select
               value={selectedLocation}
@@ -123,8 +109,6 @@ const EventListingPage = () => {
               ))}
             </select>
           </div>
-
-          {/* Date Filter */}
           <div>
             <select
               value={selectedDate}
@@ -133,30 +117,35 @@ const EventListingPage = () => {
             >
               {dates.map((date) => (
                 <option key={date} value={date}>
-                  {date === "All" ? "All Dates" : date}
+                  {date === "All" ? "All Dates" : new Date(date).toLocaleDateString()}
                 </option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* Event Cards Grid */}
-        {filteredEvents.length > 0 ? (
+        {/* Loading/Error/Events Grid */}
+        {loading ? (
+          <div className="text-center text-lg text-gray-600">Loading events…</div>
+        ) : error ? (
+          <div className="text-center text-lg text-red-500">{error}</div>
+        ) : filteredEvents.length > 0 ? (
           <motion.div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
             initial="hidden"
             animate="visible"
             variants={{
               hidden: { opacity: 0, y: 40 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: { staggerChildren: 0.2 },
-              },
+              visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.2 } },
             }}
           >
             {filteredEvents.map((event) => {
-              const seatInfo = getSeatStatus(event.totalSeats, event.bookedSeats);
+              const seatInfo = getSeatStatus(event);
+              const images = event.images ?? ["https://via.placeholder.com/600x400"];
+              const currentIndex = currentImageIndex[event.id] ?? 0;
+              const eventDate = new Date(event.date);
+              const displayDate = eventDate.toLocaleDateString();
+              const displayTime = eventDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
               return (
                 <motion.div
@@ -167,10 +156,26 @@ const EventListingPage = () => {
                 >
                   <div className="relative">
                     <img
-                      src={event.image}
+                      src={images[currentIndex]}
                       alt={event.title}
                       className="w-full h-56 object-cover"
                     />
+                    {images.length > 1 && (
+                      <>
+                        <button
+                          onClick={() => prevImage(event.id, images.length)}
+                          className="absolute top-1/2 left-3 transform -translate-y-1/2 bg-white/80 p-1 rounded-full hover:bg-white"
+                        >
+                          <ChevronLeft className="w-5 h-5 text-gray-800" />
+                        </button>
+                        <button
+                          onClick={() => nextImage(event.id, images.length)}
+                          className="absolute top-1/2 right-3 transform -translate-y-1/2 bg-white/80 p-1 rounded-full hover:bg-white"
+                        >
+                          <ChevronRight className="w-5 h-5 text-gray-800" />
+                        </button>
+                      </>
+                    )}
                     <div className="absolute top-3 right-3 bg-white/90 px-3 py-1 rounded-full text-sm font-medium text-purple-600">
                       {event.location}
                     </div>
@@ -184,11 +189,11 @@ const EventListingPage = () => {
                     <div className="text-sm text-gray-600 flex flex-col gap-1">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-blue-500" />
-                        {event.date}
+                        {displayDate}
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-green-500" />
-                        {event.time}
+                        {displayTime}
                       </div>
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-orange-500" />

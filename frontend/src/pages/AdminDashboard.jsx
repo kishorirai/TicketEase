@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Save, Filter } from 'lucide-react';
 
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('events');
   const [events, setEvents] = useState([]);
@@ -9,7 +10,8 @@ const AdminDashboard = () => {
   const [editingEvent, setEditingEvent] = useState(null);
   const [selectedEventFilter, setSelectedEventFilter] = useState('all');
   const [loading, setLoading] = useState(false);
-  
+  const [opLoading, setOpLoading] = useState(false); // for create/update/delete operations
+
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
@@ -22,154 +24,69 @@ const AdminDashboard = () => {
     imageUrl: ''
   });
 
-  // Simulated API calls - replace with actual API endpoints
+  // Helper to map server event shape -> frontend shape used in this component
+  const mapServerEvent = (ev) => {
+    
+    const date = ev.date ? (ev.date.split ? ev.date.split('T')[0] : ev.date) : '';
+    const images = Array.isArray(ev.images) ? ev.images : (ev.images ? [ev.images] : []);
+    return {
+      id: ev.id,
+      title: ev.title || '',
+      description: ev.description || '',
+      date,
+      time: ev.time || '',
+      venue: ev.location || ev.venue || '',
+      totalSeats: ev.total_seats ?? ev.totalSeats ?? 0,
+      availableSeats: ev.available_seats ?? ev.availableSeats ?? 0,
+      price: ev.price ?? 0,
+      category: ev.category || '',
+      imageUrl: images.length > 0 ? images[0] : (ev.imageUrl || '')
+    };
+  };
+
+  // Fetch events from backend
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/events');
+      if (!res.ok) {
+        throw new Error(`Failed to fetch events: ${res.status}`);
+      }
+      const data = await res.json();
+      // Expect data to be array of events (controller uses parseFullEvent so .images may be array)
+      const mapped = Array.isArray(data) ? data.map(mapServerEvent) : [];
+      setEvents(mapped);
+    } catch (err) {
+      console.error(err);
+      alert('Error fetching events: ' + err.message);
+      setEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch bookings from backend
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch('/api/admin/bookings');
+      if (!res.ok) {
+        // If endpoint not available or returns 404, fallback to empty bookings
+        console.warn('Bookings endpoint returned', res.status);
+        setBookings([]);
+        return;
+      }
+      const data = await res.json();
+      setBookings(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setBookings([]);
+    }
+  };
+
   useEffect(() => {
     fetchEvents();
     fetchBookings();
   }, []);
-
-  const fetchEvents = async () => {
-    setLoading(true);
-    // Simulated data - replace with: fetch('/api/events')
-    setTimeout(() => {
-      setEvents([
-        {
-          id: 1,
-          title: 'Tech Conference 2025',
-          description: 'Annual technology conference featuring industry leaders',
-          date: '2025-12-15',
-          time: '09:00',
-          venue: 'Convention Center',
-          totalSeats: 500,
-          availableSeats: 320,
-          price: 299.99,
-          category: 'Technology',
-          imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400'
-        },
-        {
-          id: 2,
-          title: 'Music Festival',
-          description: 'Three-day music festival with top artists',
-          date: '2025-11-20',
-          time: '14:00',
-          venue: 'Central Park',
-          totalSeats: 1000,
-          availableSeats: 450,
-          price: 149.99,
-          category: 'Music',
-          imageUrl: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400'
-        }
-      ]);
-      setLoading(false);
-    }, 500);
-  };
-
-  const fetchBookings = async () => {
-    // Simulated data - replace with: fetch('/api/admin/bookings')
-    setTimeout(() => {
-      setBookings([
-        {
-          id: 1,
-          bookerName: 'John Doe',
-          email: 'john@example.com',
-          eventId: 1,
-          eventTitle: 'Tech Conference 2025',
-          quantity: 2,
-          totalAmount: 599.98,
-          status: 'Confirmed',
-          bookingDate: '2025-11-01'
-        },
-        {
-          id: 2,
-          bookerName: 'Jane Smith',
-          email: 'jane@example.com',
-          eventId: 2,
-          eventTitle: 'Music Festival',
-          quantity: 4,
-          totalAmount: 599.96,
-          status: 'Confirmed',
-          bookingDate: '2025-11-02'
-        },
-        {
-          id: 3,
-          bookerName: 'Mike Johnson',
-          email: 'mike@example.com',
-          eventId: 1,
-          eventTitle: 'Tech Conference 2025',
-          quantity: 1,
-          totalAmount: 299.99,
-          status: 'Pending',
-          bookingDate: '2025-11-03'
-        }
-      ]);
-    }, 500);
-  };
-
-  const handleCreateEvent = (e) => {
-    if (e) e.preventDefault();
-    setLoading(true);
-    
-    // Replace with actual API call: POST /api/admin/events
-    const newEvent = {
-      id: events.length + 1,
-      ...eventForm,
-      totalSeats: parseInt(eventForm.totalSeats),
-      availableSeats: parseInt(eventForm.totalSeats),
-      price: parseFloat(eventForm.price)
-    };
-    
-    setTimeout(() => {
-      setEvents([...events, newEvent]);
-      resetForm();
-      setLoading(false);
-      alert('Event created successfully!');
-    }, 500);
-  };
-
-  const handleUpdateEvent = (e) => {
-    if (e) e.preventDefault();
-    setLoading(true);
-    
-    // Replace with actual API call: PUT /api/admin/events/:id
-    setTimeout(() => {
-      setEvents(events.map(event => 
-        event.id === editingEvent.id 
-          ? { ...event, ...eventForm, totalSeats: parseInt(eventForm.totalSeats), price: parseFloat(eventForm.price) }
-          : event
-      ));
-      resetForm();
-      setLoading(false);
-      alert('Event updated successfully!');
-    }, 500);
-  };
-
-  const handleDeleteEvent = async (eventId) => {
-    if (!window.confirm('Are you sure you want to delete this event?')) return;
-    
-    setLoading(true);
-    // Replace with actual API call: DELETE /api/admin/events/:id
-    setTimeout(() => {
-      setEvents(events.filter(event => event.id !== eventId));
-      setLoading(false);
-      alert('Event deleted successfully!');
-    }, 500);
-  };
-
-  const openEditForm = (event) => {
-    setEditingEvent(event);
-    setEventForm({
-      title: event.title,
-      description: event.description,
-      date: event.date,
-      time: event.time,
-      venue: event.venue,
-      totalSeats: event.totalSeats.toString(),
-      price: event.price.toString(),
-      category: event.category,
-      imageUrl: event.imageUrl || ''
-    });
-    setShowEventForm(true);
-  };
 
   const resetForm = () => {
     setEventForm({
@@ -187,9 +104,119 @@ const AdminDashboard = () => {
     setShowEventForm(false);
   };
 
-  const filteredBookings = selectedEventFilter === 'all' 
-    ? bookings 
-    : bookings.filter(b => b.eventId === parseInt(selectedEventFilter));
+  const openEditForm = (event) => {
+    setEditingEvent(event);
+    setEventForm({
+      title: event.title,
+      description: event.description,
+      date: event.date,
+      time: event.time || '',
+      venue: event.venue,
+      totalSeats: String(event.totalSeats || ''),
+      price: String(event.price ?? ''),
+      category: event.category || '',
+      imageUrl: event.imageUrl || ''
+    });
+    setShowEventForm(true);
+  };
+
+  const handleCreateEvent = async (e) => {
+    if (e) e.preventDefault();
+    setOpLoading(true);
+    try {
+      // Build payload matching backend controller expectations
+      const payload = {
+        title: eventForm.title,
+        date: eventForm.date,
+        location: eventForm.venue,
+        price: parseFloat(eventForm.price || 0),
+        total_seats: parseInt(eventForm.totalSeats || '0', 10),
+        // controller expects images as array; use single imageUrl if provided
+        images: eventForm.imageUrl ? [eventForm.imageUrl] : []
+      };
+
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Create failed: ${res.status}`);
+      }
+      const created = await res.json();
+      const mapped = mapServerEvent(created);
+      setEvents(prev => [...prev, mapped]);
+      resetForm();
+      alert('Event created successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Error creating event: ' + err.message);
+    } finally {
+      setOpLoading(false);
+    }
+  };
+
+  const handleUpdateEvent = async (e) => {
+    if (e) e.preventDefault();
+    if (!editingEvent) return;
+    setOpLoading(true);
+    try {
+      const payload = {
+        title: eventForm.title,
+        date: eventForm.date,
+        location: eventForm.venue,
+        price: parseFloat(eventForm.price || 0),
+        total_seats: parseInt(eventForm.totalSeats || '0', 10),
+        images: eventForm.imageUrl ? [eventForm.imageUrl] : []
+      };
+
+      const res = await fetch(`/api/events/${editingEvent.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Update failed: ${res.status}`);
+      }
+      const updated = await res.json();
+      const mapped = mapServerEvent(updated);
+      setEvents(prev => prev.map(ev => (ev.id === mapped.id ? mapped : ev)));
+      resetForm();
+      alert('Event updated successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Error updating event: ' + err.message);
+    } finally {
+      setOpLoading(false);
+    }
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+    setOpLoading(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error || `Delete failed: ${res.status}`);
+      }
+      setEvents(prev => prev.filter(ev => ev.id !== eventId));
+      alert('Event deleted successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting event: ' + err.message);
+    } finally {
+      setOpLoading(false);
+    }
+  };
+
+  const filteredBookings = selectedEventFilter === 'all'
+    ? bookings
+    : bookings.filter(b => b.eventId === parseInt(selectedEventFilter, 10));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -265,9 +292,8 @@ const AdminDashboard = () => {
                       </div>
 
                       <div>
-                        <label className="block text-purple-200 mb-2">Description *</label>
+                        <label className="block text-purple-200 mb-2">Description</label>
                         <textarea
-                          required
                           value={eventForm.description}
                           onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
                           rows="3"
@@ -288,10 +314,9 @@ const AdminDashboard = () => {
                         </div>
 
                         <div>
-                          <label className="block text-purple-200 mb-2">Time *</label>
+                          <label className="block text-purple-200 mb-2">Time</label>
                           <input
                             type="time"
-                            required
                             value={eventForm.time}
                             onChange={(e) => setEventForm({...eventForm, time: e.target.value})}
                             className="w-full bg-slate-700 text-white px-4 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
@@ -338,10 +363,9 @@ const AdminDashboard = () => {
                       </div>
 
                       <div>
-                        <label className="block text-purple-200 mb-2">Category *</label>
+                        <label className="block text-purple-200 mb-2">Category</label>
                         <input
                           type="text"
-                          required
                           value={eventForm.category}
                           onChange={(e) => setEventForm({...eventForm, category: e.target.value})}
                           className="w-full bg-slate-700 text-white px-4 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
@@ -362,7 +386,7 @@ const AdminDashboard = () => {
                     <div className="flex gap-4 mt-6">
                       <button
                         onClick={editingEvent ? handleUpdateEvent : handleCreateEvent}
-                        disabled={loading}
+                        disabled={opLoading}
                         className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white px-4 py-3 rounded-lg font-semibold transition-colors"
                       >
                         <Save size={20} />
@@ -382,7 +406,7 @@ const AdminDashboard = () => {
 
             {/* Events List */}
             <div className="grid gap-4">
-              {loading && events.length === 0 ? (
+              {loading ? (
                 <div className="text-center text-purple-300 py-12">Loading events...</div>
               ) : events.length === 0 ? (
                 <div className="text-center text-purple-300 py-12">No events found. Create your first event!</div>
@@ -402,7 +426,7 @@ const AdminDashboard = () => {
                           <div>
                             <h3 className="text-xl font-bold text-white mb-1">{event.title}</h3>
                             <span className="inline-block bg-purple-600 text-white text-xs px-2 py-1 rounded">
-                              {event.category}
+                              {event.category || 'General'}
                             </span>
                           </div>
                           <div className="flex gap-2">
@@ -417,6 +441,7 @@ const AdminDashboard = () => {
                               onClick={() => handleDeleteEvent(event.id)}
                               className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                               title="Delete"
+                              disabled={opLoading}
                             >
                               <Trash2 size={18} />
                             </button>
@@ -430,7 +455,7 @@ const AdminDashboard = () => {
                           </div>
                           <div>
                             <span className="text-purple-300">Time:</span>
-                            <p className="text-white font-semibold">{event.time}</p>
+                            <p className="text-white font-semibold">{event.time || '-'}</p>
                           </div>
                           <div>
                             <span className="text-purple-300">Venue:</span>
@@ -438,7 +463,7 @@ const AdminDashboard = () => {
                           </div>
                           <div>
                             <span className="text-purple-300">Price:</span>
-                            <p className="text-white font-semibold">${event.price}</p>
+                            <p className="text-white font-semibold">${Number(event.price).toFixed(2)}</p>
                           </div>
                           <div>
                             <span className="text-purple-300">Total Seats:</span>
@@ -450,7 +475,7 @@ const AdminDashboard = () => {
                           </div>
                           <div>
                             <span className="text-purple-300">Booked:</span>
-                            <p className="text-white font-semibold">{event.totalSeats - event.availableSeats}</p>
+                            <p className="text-white font-semibold">{(event.totalSeats || 0) - (event.availableSeats || 0)}</p>
                           </div>
                         </div>
                       </div>
@@ -513,11 +538,11 @@ const AdminDashboard = () => {
                           <td className="px-6 py-4 text-purple-200">{booking.email}</td>
                           <td className="px-6 py-4 text-white">{booking.eventTitle}</td>
                           <td className="px-6 py-4 text-white">{booking.quantity}</td>
-                          <td className="px-6 py-4 text-white font-semibold">${booking.totalAmount.toFixed(2)}</td>
+                          <td className="px-6 py-4 text-white font-semibold">${Number(booking.totalAmount || 0).toFixed(2)}</td>
                           <td className="px-6 py-4">
                             <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                              booking.status === 'Confirmed' 
-                                ? 'bg-green-600 text-white' 
+                              booking.status === 'Confirmed'
+                                ? 'bg-green-600 text-white'
                                 : 'bg-yellow-600 text-white'
                             }`}>
                               {booking.status}
@@ -541,13 +566,13 @@ const AdminDashboard = () => {
               <div className="bg-slate-800 rounded-xl p-6">
                 <h3 className="text-purple-300 mb-2">Total Revenue</h3>
                 <p className="text-3xl font-bold text-white">
-                  ${filteredBookings.reduce((sum, b) => sum + b.totalAmount, 0).toFixed(2)}
+                  ${filteredBookings.reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0).toFixed(2)}
                 </p>
               </div>
               <div className="bg-slate-800 rounded-xl p-6">
                 <h3 className="text-purple-300 mb-2">Total Tickets Sold</h3>
                 <p className="text-3xl font-bold text-white">
-                  {filteredBookings.reduce((sum, b) => sum + b.quantity, 0)}
+                  {filteredBookings.reduce((sum, b) => sum + (Number(b.quantity) || 0), 0)}
                 </p>
               </div>
             </div>
