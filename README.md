@@ -96,7 +96,7 @@ A full-stack event booking application where users can browse events, book ticke
 
 ### Landing Page
 
-![Landing Page](https://via.placeholder.com/600x300.png?text=Landing+Page+GIF)
+https://ticket-booking-sepia.vercel.app/
 
 ### Event Listing Page
 
@@ -104,28 +104,25 @@ A full-stack event booking application where users can browse events, book ticke
 * Search & filter by date/location
 * Real-time seat availability
 
-![Event Listing Animation](https://via.placeholder.com/600x300.gif?text=Event+Listing+GIF)
+
 
 ### Event Details Page
 
 * Event description & Google Maps integration
 * Dynamic ticket categories & pricing
 
-![Event Details Animation](https://via.placeholder.com/600x300.gif?text=Event+Details+GIF)
+
 
 ### Booking Flow
 
 * Animated checkout form
 * Success screen with confetti & QR ticket
 
-![Booking Success GIF](https://via.placeholder.com/600x300.gif?text=Booking+Success+GIF)
 
 ### Admin Dashboard
 
 * CRUD operations for events
 * Booking overview per event
-
-![Admin Dashboard](https://via.placeholder.com/600x300.png?text=Admin+Dashboard+GIF)
 
 ---
 
@@ -138,29 +135,24 @@ event-booking-app/
 │   ├── controllers/   # API logic
 │   ├── models/        # DB models
 │   ├── routes/        # API routes
-│   ├── index.js       # Entry point
+│   ├── server.js       # Entry point
 │   └── config.js      # DB config
 │
 ├── frontend/          # React + Tailwind frontend
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   └── App.jsx
-│   └── package.json
-│
-├── event_booking.sql  # MySQL schema
-└── README.md
-```
+   ├── src/
+   │   ├── pages/
+   │   ├── components/
+   │   └── App.jsx
+   └── package.json
 
----
 
 ## ⚡ Setup Instructions
 
 ### Backend
 
 ```bash
-git clone https://github.com/your-username/event-booking-app.git
-cd event-booking-app/backend
+git clone https://github.com/kishorirai/ticket-booking-
+cd event-booking-/backend
 npm install
 ```
 
@@ -174,12 +166,6 @@ DB_NAME=event_booking
 PORT=5000
 ```
 
-* Import database:
-
-```bash
-mysql -u root -p event_booking < event_booking.sql
-```
-
 * Start server:
 
 ```bash
@@ -191,8 +177,4 @@ npm run dev
 ```bash
 cd ../frontend
 npm install
-npm start
-```
-
-
-
+npm run dev
