@@ -4,9 +4,9 @@ import './App.css';
 import Header from './components/Header';
 import Home from './pages/Home';
 import EventListingPage from './pages/EventLists';
-import EventDetails from './pages/EventDetails';
-import BookingFlow from './pages/Bookings';
-import AdminDashboard from './pages/AdminDashboard'; 
+import EventDetailsPage from './pages/EventDetails';     
+import BookingsPage from './pages/Bookings';               
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -16,9 +16,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<EventListingPage />} />
-          <Route path="/events/:id" element={<EventDetails />} />
-          <Route path="/bookings" element={<BookingFlow />} />
-          <Route path="/admindashboard" element={<AdminDashboard />} /> {/* ✅ New route */}
+          <Route path="/events/:id" element={<EventDetailsPage />} />
+          <Route path="/bookings" element={<BookingsPage />} />    
+          <Route path="/admindashboard" element={<AdminDashboard />} />
         </Routes>
       </div>
     </Router>
