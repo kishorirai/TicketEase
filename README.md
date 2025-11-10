@@ -1,7 +1,7 @@
 
 # 🎟️ TICKETEASE
 
-![Project Banner](https://via.placeholder.com/1200x300.png?text=Smart+Event+Booking+App)
+
 
 A full-stack event booking application where users can browse events, book tickets, and manage reservations, while admins can create and manage events. Real-time seat availability, smooth animations, and responsive design included.
 
