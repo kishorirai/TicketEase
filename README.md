@@ -150,21 +150,21 @@ https://ticket-booking-sepia.vercel.app/
 * Event description & Google Maps integration
 * Dynamic ticket categories & pricing
 
-![Event Details Animation](https://via.placeholder.com/600x300.gif?text=Event+Details+GIF)
+
 
 ### Booking Flow
 
 * Animated checkout form
 * Success screen with confetti & QR ticket
 
-![Booking Success GIF](https://via.placeholder.com/600x300.gif?text=Booking+Success+GIF)
+
 
 ### Admin Dashboard
 
 * CRUD operations for events & ticket categories
 * Booking overview per event
 
-![Admin Dashboard](https://via.placeholder.com/600x300.png?text=Admin+Dashboard+GIF)
+
 
 ---
 
