@@ -232,12 +232,3 @@ cd ../frontend
 npm install
 npm start
 ```
-
----
-
-## 🚀 Deployment
-
-* Backend: Render / Heroku
-* Frontend: Vercel / Netlify
-
-do that next?
