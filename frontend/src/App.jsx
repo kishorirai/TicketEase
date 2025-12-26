@@ -6,7 +6,6 @@ import Home from './pages/Home';
 import EventListingPage from './pages/EventLists';
 import EventDetailsPage from './pages/EventDetails';
 import BookingsPage from './pages/Bookings';
-import AdminDashboard from './pages/AdminDashboard';
 import TicketEaseAuth from './pages/Authpage';
 import BookingSuccess from './pages/BookingSuccess';
 
@@ -28,7 +27,7 @@ function App() {
           <Route path="/bookingsuccess" element={<Navigate to="/bookings/success" replace />} />
           <Route path="/bookings/bookingsuccess" element={<Navigate to="/bookings/success" replace />} />
           
-          <Route path="/admindashboard" element={<AdminDashboard />} />
+          
 
           {/* canonical auth route used by EventDetails */}
           <Route path="/auth" element={<TicketEaseAuth />} />

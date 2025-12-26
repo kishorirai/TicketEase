@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // For navigation
+import { ArrowRight, ChevronLeft, ChevronRight, MapPin, Sparkles, Star, Search } from "lucide-react";
 
-import PartnersAndResources from "../components/PartnersandResources";
 import AgendaSection from "../components/Agenda";
-import TicketPricingFAQFooter from "../components/Ticketfooter";
 import ConferenceFeaturedSection from "../components/FeaturedSection";
 
 export default function ConferenceLanding() {
   const [scrollY, setScrollY] = useState(0);
-  const navigate = useNavigate();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [hoveredCity, setHoveredCity] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -17,226 +17,365 @@ export default function ConferenceLanding() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const heroOpacity = Math.max(1 - scrollY / 400, 0);
+  const slides = [
+    {
+      image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1920&h=800&fit=crop",
+      eventName: "Summer Music Festival",
+      tagline: "Where rhythm meets summer breeze",
+      gradient: "from-purple-900/60 via-pink-900/40 to-transparent"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1920&h=800&fit=crop",
+      eventName: "Rock Concert Live",
+      tagline: "Feel the thunder of live music",
+      gradient: "from-red-900/60 via-orange-900/40 to-transparent"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1506157786151-b8491531f063?w=1920&h=800&fit=crop",
+      eventName: "Jazz Night Experience",
+      tagline: "Smooth melodies under the stars",
+      gradient: "from-blue-900/60 via-indigo-900/40 to-transparent"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1920&h=800&fit=crop",
+      eventName: "Electronic Dance Festival",
+      tagline: "Lose yourself in the beat",
+      gradient: "from-cyan-900/60 via-teal-900/40 to-transparent"
+    },
+    {
+      image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1920&h=800&fit=crop",
+      eventName: "Indie Music Fest",
+      tagline: "Discover tomorrow's legends today",
+      gradient: "from-emerald-900/60 via-green-900/40 to-transparent"
+    }
+  ];
+
+  // All available cities
+  const cities = [
+    { 
+      name: "Mumbai", 
+      events: 45, 
+      img: "https://images.unsplash.com/photo-1566552881560-0be862a7c445?auto=format&fit=crop&w=600&q=80",
+      popular: true
+    },
+    { 
+      name: "Delhi", 
+      events: 38, 
+      img: "https://images.unsplash.com/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=600&q=80",
+      popular: true
+    },
+    { 
+      name: "Bengaluru", 
+      events: 52, 
+      img: "https://images.unsplash.com/photo-1596176530529-78163a4f7af2?auto=format&fit=crop&w=600&q=80",
+      popular: true
+    },
+    { 
+      name: "Chennai", 
+      events: 29, 
+      img: "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80",
+      popular: false
+    },
+    
+    { 
+      name: "Hyderabad", 
+      events: 41, 
+      img: "https://images.unsplash.com/photo-1609920658906-8223bd289001?auto=format&fit=crop&w=600&q=80",
+      popular: true
+    },
+    { 
+      name: "Pune", 
+      events: 27, 
+      img: "https://images.unsplash.com/photo-1595658658481-d53d3f999875?auto=format&fit=crop&w=600&q=80",
+      popular: false
+    },
+  ];
+
   const speakerSectionStart = 400;
-  const animationStart = 600;
-  const animationEnd = 1000;
-  const animationProgress = Math.max(
-    0,
-    Math.min(1, (scrollY - animationStart) / (animationEnd - animationStart))
-  );
-  const sideCardOffset = 80;
-  const sideCardsTranslateY = sideCardOffset * (1 - animationProgress);
   const speakerOpacity = Math.min((scrollY - speakerSectionStart) / 200, 1);
-  const aboutVisible = scrollY > 1200;
+
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [slides.length, isAutoPlaying]);
+
+  const nextSlide = () => {
+    setIsAutoPlaying(false);
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setIsAutoPlaying(false);
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const goToSlide = (index) => {
+    setIsAutoPlaying(false);
+    setCurrentSlide(index);
+  };
+
+  // Filter cities based on search query - show all if empty
+  const filteredCities = searchQuery.trim() === "" 
+    ? cities 
+    :  cities.filter(city => 
+        city.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
   return (
-    <div className="bg-black">
-      {/* Fixed Buy Ticket Button */}
+    <div className="bg-black min-h-screen">
+      {/* Floating CTA Button */}
       <button
-        onClick={() => navigate("/events")}
-        className="fixed bottom-8 right-8 bg-white text-purple-600 px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-gray-100 transition-all shadow-2xl z-50"
+        className="fixed bottom-8 right-8 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-bold flex items-center gap-3 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 z-50 group"
       >
-        Buy Ticket
-        <ArrowRight className="w-5 h-5" />
+        <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+        Buy Tickets
+        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
       </button>
 
-      {/* Hero Section */}
-      <section
-        className="min-h-screen relative"
-        style={{
-          backgroundColor: "#6F2CFD",
-          opacity: heroOpacity,
-          position: heroOpacity > 0 ? "sticky" : "relative",
-          top: 0,
-          zIndex: 1,
-        }}
-      >
-        {/* Animated Gradient Background */}
-        <div className="absolute inset-0">
-          <div
-            className="absolute inset-0 opacity-30"
-            style={{
-              background:
-                "radial-gradient(circle at 20% 50%, rgba(157, 127, 255, 0.6) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(124, 92, 232, 0.6) 0%, transparent 50%)",
-              animation: "moveGradient 10s ease infinite",
-            }}
-          ></div>
-        </div>
-
-        {/* Floating Particles */}
-        <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
+      {/* Hero Carousel */}
+      <section className="relative h-screen overflow-hidden">
+        <div className="relative h-full">
+          {slides.map((slide, index) => (
             <div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: `${Math.random() * 100 + 50}px`,
-                height: `${Math.random() * 100 + 50}px`,
-                background: `rgba(255, 255, 255, ${Math.random() * 0.1 + 0.05})`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 10 + 15}s ease-in-out infinite`,
-                animationDelay: `${Math.random() * 5}s`,
-              }}
-            ></div>
+              key={index}
+              className={`absolute inset-0 transition-all duration-1000 ${
+                currentSlide === index ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 scale-105"
+              }`}
+            >
+              <div className="absolute inset-0">
+                <img
+                  src={slide.image}
+                  alt={slide.eventName}
+                  className="w-full h-full object-cover"
+                />
+                <div className={`absolute inset-0 bg-gradient-to-t ${slide.gradient}`}></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+              </div>
+
+              <div className="absolute inset-0 flex items-end justify-start p-8 md:p-16 z-20">
+                <div className="max-w-4xl space-y-6">
+                  <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 mb-4">
+                    <span className="text-white text-sm font-semibold">Featured Event</span>
+                  </div>
+                  <h1 
+                    className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight tracking-tight"
+                    style={{
+                      fontFamily: "'Playfair Display', 'Georgia', serif",
+                      textShadow: "0 4px 30px rgba(0,0,0,0.9), 0 0 60px rgba(255,255,255,0.1)",
+                      animation: currentSlide === index ? "slideUp 0.8s ease-out" : "none"
+                    }}
+                  >
+                    {slide.eventName}
+                  </h1>
+                  <p 
+                    className="text-xl md:text-2xl text-white/90 font-light"
+                    style={{
+                      animation: currentSlide === index ? "slideUp 0.8s ease-out 0.2s both" : "none"
+                    }}
+                  >
+                    {slide.tagline}
+                  </p>
+                  <button 
+                    className="mt-6 px-8 py-4 bg-white text-black font-bold rounded-full hover:bg-gray-100 transition-all hover: scale-105 shadow-xl"
+                    style={{
+                      animation: currentSlide === index ? "slideUp 0.8s ease-out 0.4s both" : "none"
+                    }}
+                  >
+                    Explore Events
+                  </button>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
 
-        {/* Animated Wave Background */}
-        <div className="absolute inset-0 opacity-30">
-          <svg className="absolute w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: "#9D7FFF", stopOpacity: 0.8 }} />
-                <stop offset="100%" style={{ stopColor: "#7C5CE8", stopOpacity: 0.8 }} />
-              </linearGradient>
-            </defs>
-            {[100, 200, 300, 450].map((y, i) => (
-              <path
-                key={i}
-                fill="none"
-                stroke="url(#grad1)"
-                strokeWidth={i === 2 ? "4" : "3"}
-                d={`M0,${y} Q250,${y - 50} 500,${y} T1000,${y} T1500,${y}`}
-                opacity={`${0.4 + i * 0.1}`}
-              >
-                <animate
-                  attributeName="d"
-                  dur={`${8 + i * 3}s`}
-                  repeatCount="indefinite"
-                  values={`M0,${y} Q250,${y - 50} 500,${y} T1000,${y} T1500,${y};
-                           M0,${y} Q250,${y + 50} 500,${y} T1000,${y} T1500,${y};
-                           M0,${y} Q250,${y - 50} 500,${y} T1000,${y} T1500,${y}`}
-                />
-              </path>
-            ))}
-          </svg>
-        </div>
+        {/* Navigation */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 bg-white/10 backdrop-blur-md p-4 rounded-full hover:bg-white/20 hover:scale-110 transition-all border border-white/20 group"
+        >
+          <ChevronLeft className="w-6 h-6 text-white group-hover:-translate-x-1 transition-transform" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 bg-white/10 backdrop-blur-md p-4 rounded-full hover:bg-white/20 hover:scale-110 transition-all border border-white/20 group"
+        >
+          <ChevronRight className="w-6 h-6 text-white group-hover:translate-x-1 transition-transform" />
+        </button>
 
-        <style>{`
-          @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0) scale(1); }
-            33% { transform: translateY(-30px) translateX(20px) scale(1.1); }
-            66% { transform: translateY(-15px) translateX(-20px) scale(0.9); }
-          }
-          @keyframes moveGradient {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(50px, 50px) scale(1.1); }
-          }
-        `}</style>
-
-        {/* Hero Content */}
-        <div className="container mx-auto px-8 flex items-center justify-center" style={{ minHeight: "calc(100vh - 100px)" }}>
-          <div className="max-w-4xl pt-24">
-            <h1 className="text-6xl font-black mb-6 leading-tight" style={{ color: "#FFE302" }}>
-              Discover. Book.<br />
-              Experience. Live Events<br />
-              Made Easy.
-            </h1>
-            <p className="text-white text-xl mb-8 max-w-2xl mx-auto leading-relaxed">
-              Your one-stop destination to book tickets for concerts, sports, theatre, and festivals.
-              Explore top events near you and reserve your spot today!
-            </p>
+        {/* Dots */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-30 flex gap-3">
+          {slides.map((_, index) => (
             <button
-              onClick={() => navigate("/events")}
-              className="bg-white text-purple-600 px-8 py-4 rounded-full font-bold text-lg flex items-center gap-3 hover:bg-gray-100 transition-all shadow-lg"
-            >
-              Buy Ticket
-              <ArrowRight className="w-6 h-6" />
-            </button>
-          </div>
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`h-2 rounded-full transition-all duration-500 ${
+                currentSlide === index 
+                  ? "bg-white w-12 shadow-lg shadow-white/50" 
+                  : "bg-white/40 w-2 hover:bg-white/60"
+              }`}
+            />
+          ))}
         </div>
       </section>
 
-      {/* Featured Events Section */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&display=swap');
+        
+        @keyframes slideUp {
+          from { 
+            opacity: 0; 
+            transform: translateY(40px);
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+        }
+
+        .glass-effect {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-hover {
+          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+          transform: translateY(-8px) scale(1.02);
+          box-shadow: 0 25px 50px -12px rgba(147, 51, 234, 0.25);
+        }
+      `}</style>
+
+      {/* Location-Based Events Section */}
       <section
-        className="relative py-32 pb-64"
-        style={{ opacity: speakerOpacity, zIndex: 2, backgroundColor: "#111111" }}
+        className="relative py-24 overflow-hidden bg-gradient-to-b from-[#0a0a0a] via-[#0a1520] to-[#0f0518]"
+        style={{ opacity: speakerOpacity }}
       >
-        <div className="container mx-auto px-8">
-          <h2 className="text-5xl font-black text-center text-white mb-16">Featured Events</h2>
-          <div className="overflow-x-auto pb-8 scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-            <div className="inline-flex gap-6 min-w-max items-end">
-              {[
-                { id: 1, title: "Summer Music Festival 2025", location: "New York", date: "2025-06-15", time: "18:00", image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=1000&h=600&fit=crop", price: 99, totalSeats: 500, bookedSeats: 450 },
-                { id: 2, title: "Tech Conference 2025", location: "San Francisco", date: "2025-07-20", time: "09:00", image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1000&h=600&fit=crop", price: 109, totalSeats: 300, bookedSeats: 275 },
-                { id: 3, title: "Food & Wine Festival", location: "Los Angeles", date: "2025-08-10", time: "12:00", image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1000&h=600&fit=crop", price: 175, totalSeats: 200, bookedSeats: 180 },
-                { id: 4, title: "Art Gallery Exhibition", location: "Chicago", date: "2025-07-05", time: "10:00", image: "https://images.unsplash.com/photo-1531058020387-3be344556be6?w=1000&h=600&fit=crop", price: 135, totalSeats: 150, bookedSeats: 45 },
-              ].map((event, index) => {
-                const seatsLeft = event.totalSeats - event.bookedSeats;
-                return (
-                  <div key={event.id} className="w-70 flex-shrink-0" style={{ transform: index % 2 === 0 ? `translateY(${sideCardsTranslateY}px)` : "translateY(0)" }}>
-                    <div className="rounded-xl overflow-hidden mb-4 relative" style={{ backgroundColor: "#222", height: "260px" }}>
-                      <img src={event.image} alt={event.title} className="w-full h-full object-cover p-2 rounded-xl" />
-                    </div>
-                    <div className="bg-gray-900 p-5 rounded-lg">
-                      <h3 className="text-white text-xl font-bold mb-1">{event.title}</h3>
-                      <p className="text-gray-400 text-sm mb-1">📍 {event.location}</p>
-                      <p className="text-gray-400 text-sm mb-2">🗓 {event.date} • ⏰ {event.time}</p>
-                      <p className="text-yellow-400 text-sm font-semibold mb-2">{seatsLeft > 0 ? `${seatsLeft} seats left` : "Sold Out"}</p>
-                      <p className="text-white text-lg font-bold mb-3">${event.price}</p>
-                      <button
-                        onClick={() => navigate("/events")}
-                        className="w-full bg-white text-purple-600 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
-                      >
-                        Book Ticket
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
+          <div className="absolute top-1/2 left-1/3 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "4s" }}></div>
+        </div>
+
+        <div className="container mx-auto px-6 md:px-10 relative z-10">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 px-6 py-3 rounded-full mb-6 glass-effect">
+              <MapPin className="w-5 h-5 text-blue-400" />
+              <span className="text-blue-300 font-semibold">Discover Locally</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-black mb-6 bg-gradient-to-r from-white via-blue-200 to-cyan-200 bg-clip-text text-transparent">
+              Events Near You
+            </h2>
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-12">
+              Explore exciting events happening in cities across India
+            </p>
+
+            {/* Search Bar */}
+            <div className="max-w-3xl mx-auto">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                  <Search className="w-6 h-6 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search your city..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-16 pr-6 py-5 bg-white/5 backdrop-blur-md border-2 border-white/10 rounded-2xl text-white placeholder-gray-400 focus: border-purple-500 focus: outline-none transition-all duration-300 text-lg"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute inset-y-0 right-2 px-5 my-2 text-gray-400 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* About Section */}
-      <section className="min-h-screen bg-black text-white py-20" style={{ opacity: aboutVisible ? 1 : 0, transition: "opacity 0.5s", zIndex: 3 }}>
-        <div className="container mx-auto px-8">
-          <h2 className="text-6xl font-black mb-8">About TicketEase</h2>
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <p className="text-xl leading-relaxed mb-6">
-                <span className="font-bold" style={{ color: "#FFE302" }}>TicketEase</span> is your one-stop destination to discover, explore, and book tickets for the hottest events around you.
-                Whether it’s <span className="font-semibold text-purple-400">concerts, workshops, festivals, or sports</span> — we make booking effortless and exciting.
-              </p>
-              <p className="text-lg text-gray-300 mb-6">
-                Our mission is simple — to connect people with experiences they love.
-                Enjoy seamless booking, instant e-tickets, and secure payments — all in just a few taps.
-              </p>
-              <div className="grid grid-cols-2 gap-4 mt-8">
-                {[
-                  { label: "Instant Booking", icon: "🎟️" },
-                  { label: "Secure Payments", icon: "💳" },
-                  { label: "Verified Events", icon: "✅" },
-                  { label: "24/7 Support", icon: "🕒" },
-                ].map((feature, i) => (
-                  <div key={i} className="bg-gray-900 rounded-xl p-4 flex flex-col items-center text-center hover:bg-gray-800 transition">
-                    <div className="text-3xl mb-2">{feature.icon}</div>
-                    <div className="font-bold text-white">{feature.label}</div>
+          {/* Cities Grid */}
+          <div className="max-w-7xl mx-auto">
+            {filteredCities.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                {filteredCities.map((city, i) => (
+                  <div
+                    key={i}
+                    onMouseEnter={() => setHoveredCity(city.name)}
+                    onMouseLeave={() => setHoveredCity(null)}
+                    className="relative rounded-3xl overflow-hidden card-hover h-72 group cursor-pointer"
+                  >
+                    <img
+                      src={city.img}
+                      alt={city. name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                    
+                    {/* Popular Badge */}
+                    {city.popular && (
+                      <div className="absolute top-3 left-3 px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold rounded-full flex items-center gap-1 shadow-lg">
+                        <Star className="w-3 h-3 fill-black" />
+                        Hot
+                      </div>
+                    )}
+
+                    {/* City Info */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-end p-5 text-center">
+                      <div className="mb-3 w-14 h-14 glass-effect rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <MapPin className="w-7 h-7 text-white" />
+                      </div>
+                      <h3 className="text-2xl font-black text-white mb-2">{city.name}</h3>
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600/80 to-pink-600/80 backdrop-blur-sm rounded-full">
+                        <Sparkles className="w-3. 5 h-3.5 text-white" />
+                        <span className="text-white font-semibold text-sm">{city.events} Events</span>
+                      </div>
+                    </div>
+
+                    {/* Hover Border Effect */}
+                    <div className="absolute inset-0 rounded-3xl ring-2 ring-transparent group-hover:ring-purple-500/50 transition-all duration-300"></div>
                   </div>
                 ))}
               </div>
-            </div>
-            <div>
-              <div className="bg-gray-900 rounded-xl overflow-hidden h-96 shadow-lg">
-                <img
-                  src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&h=600&fit=crop"
-                  alt="People enjoying event"
-                  className="w-full h-full object-cover"
-                />
+            ) : (
+              // No Results Found
+              <div className="text-center py-20">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-800 rounded-full mb-6">
+                  <Search className="w-10 h-10 text-gray-500" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">No cities found</h3>
+                <p className="text-gray-400 mb-6">
+                  No results for "<span className="text-purple-400">{searchQuery}</span>"
+                </p>
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:scale-105 transition-all"
+                >
+                  Clear Search
+                </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* Additional Components */}
       <ConferenceFeaturedSection scrollY={scrollY} />
-      <PartnersAndResources />
       <AgendaSection />
-      <TicketPricingFAQFooter />
     </div>
   );
 }
