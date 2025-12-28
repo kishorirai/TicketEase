@@ -156,7 +156,7 @@ export default function Header() {
                           onClick={() => setMenuOpen(false)}
                         >
                           <Settings className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
-                          <span className="font-semibold">Profile Settings</span>
+                          <span className="font-semibold">Profile </span>
                         </Link>
                       </div>
 

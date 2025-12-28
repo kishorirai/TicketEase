@@ -6,19 +6,8 @@ import {
 } from 'lucide-react';
 import { login, register } from './api';
 
-// Get Google Client ID from environment
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-// Get API URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-
-// Validate configuration
-if (!GOOGLE_CLIENT_ID) {
-  console.error('❌ VITE_GOOGLE_CLIENT_ID is not set in environment variables');
-} else {
-  console.log('🔑 Frontend Google Client ID configured:', GOOGLE_CLIENT_ID. substring(0, 20) + '...');
-}
-console.log('🌐 API URL:', API_URL);
+const API_URL = import.meta.env. VITE_API_URL || 'http://localhost:4000/api';
 
 // Add animations
 if (typeof document !== 'undefined') {
@@ -31,7 +20,7 @@ if (typeof document !== 'undefined') {
         0%, 100% { transform: translate(0, 0) scale(1); }
         25% { transform: translate(20px, -50px) scale(1.1); }
         50% { transform: translate(-20px, 20px) scale(0.9); }
-        75% { transform:  translate(50px, 50px) scale(1.05); }
+        75% { transform: translate(50px, 50px) scale(1.05); }
       }
       @keyframes float {
         0%, 100% { transform: translateY(0) translateX(0); }
@@ -57,9 +46,6 @@ if (typeof document !== 'undefined') {
       .animate-shake { animation: shake 0.3s ease-in-out; }
       .animate-slide-down { animation: slide-down 0.3s ease-out; }
       .animate-scale-in { animation: scale-in 0.3s ease-out; }
-      .bg-size-200 { background-size:  200% 100%; }
-      .bg-pos-0 { background-position: 0% 0%; }
-      . bg-pos-100 { background-position: 100% 0%; transition: background-position 0.5s ease; }
     `;
     document.head.appendChild(style);
   }
@@ -69,15 +55,11 @@ if (typeof document !== 'undefined') {
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+  static getDerivedStateFromError() {
+    return { hasError:  true };
   }
 
   render() {
@@ -93,7 +75,7 @@ class ErrorBoundary extends Component {
   }
 }
 
-// Google Button Component - Improved with better error handling
+// Google Button Component
 function GoogleSignInButton({ onSuccess, onError }) {
   const buttonRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,11 +88,10 @@ function GoogleSignInButton({ onSuccess, onError }) {
     let checkInterval;
 
     const initGoogle = () => {
-      if (!window. google || !buttonRef.current || hasRendered) return;
+      if (! window.google || !buttonRef.current || hasRendered) return;
 
       if (! GOOGLE_CLIENT_ID) {
         const errorMsg = 'Google Sign-In not configured';
-        console.error('❌', errorMsg);
         setError(errorMsg);
         setIsLoading(false);
         onError?.(errorMsg);
@@ -118,16 +99,13 @@ function GoogleSignInButton({ onSuccess, onError }) {
       }
 
       try {
-        console.log('🔧 Initializing Google Sign-In...');
-        
-        window. google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
+        window.google.accounts.id.initialize({
+          client_id:  GOOGLE_CLIENT_ID,
           callback: onSuccess,
-          auto_select:  false,
-          cancel_on_tap_outside: true,
+          auto_select: false,
+          cancel_on_tap_outside:  true,
         });
 
-        // Clear and render
         if (buttonRef.current && isMounted) {
           buttonRef.current.innerHTML = '';
           window.google.accounts.id.renderButton(buttonRef.current, {
@@ -135,17 +113,15 @@ function GoogleSignInButton({ onSuccess, onError }) {
             size: 'large',
             type: 'standard',
             text: 'signin_with',
-            shape:  'rectangular',
+            shape: 'rectangular',
             logo_alignment: 'left',
             width: 350,
           });
           
           setHasRendered(true);
           setIsLoading(false);
-          console.log('✅ Google button rendered successfully');
         }
       } catch (error) {
-        console.error('❌ Google button render error:', error);
         if (isMounted) {
           const errorMsg = 'Failed to load Google Sign-In';
           setError(errorMsg);
@@ -158,8 +134,6 @@ function GoogleSignInButton({ onSuccess, onError }) {
     if (window.google) {
       initGoogle();
     } else {
-      console.log('⏳ Waiting for Google script to load...');
-      
       checkInterval = setInterval(() => {
         if (window. google) {
           clearInterval(checkInterval);
@@ -170,13 +144,12 @@ function GoogleSignInButton({ onSuccess, onError }) {
       timeoutId = setTimeout(() => {
         clearInterval(checkInterval);
         if (isMounted && ! hasRendered) {
-          console.warn('⚠️ Google script failed to load within 10 seconds');
           const errorMsg = 'Google Sign-In is taking too long to load';
           setError(errorMsg);
           setIsLoading(false);
           onError?.(errorMsg);
         }
-      }, 10000); // 10 second timeout
+      }, 10000);
     }
 
     return () => {
@@ -196,11 +169,11 @@ function GoogleSignInButton({ onSuccess, onError }) {
   }
 
   return (
-    <div className="w-full flex justify-center" style={{ minHeight:  '44px' }}>
+    <div className="w-full flex justify-center" style={{ minHeight: '44px' }}>
       {isLoading && ! hasRendered && (
         <div className="flex items-center justify-center text-gray-500 text-sm">
           <Loader className="w-4 h-4 animate-spin mr-2" />
-          Loading Google Sign-In... 
+          Loading Google Sign-In...
         </div>
       )}
       <div ref={buttonRef} className="w-full max-w-[350px]" />
@@ -212,7 +185,6 @@ function TicketEaseAuth() {
   const location = useLocation();
   const navigate = useNavigate();
   const scriptLoaded = useRef(false);
-
   const { redirectTo, payload } = location.state || {};
 
   const [isLogin, setIsLogin] = useState(true);
@@ -222,7 +194,6 @@ function TicketEaseAuth() {
   const [success, setSuccess] = useState('');
   const [termsChecked, setTermsChecked] = useState(false);
   const [focusedField, setFocusedField] = useState('');
-
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -235,46 +206,27 @@ function TicketEaseAuth() {
   const saveAuth = (token, user) => {
     localStorage.setItem('authToken', token);
     localStorage.setItem('authUser', JSON.stringify(user));
-    console.log('✅ Auth data saved to localStorage');
   };
 
-  // Load Google script once
+  // Load Google script
   useEffect(() => {
-    if (scriptLoaded.current) return;
-
-    const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
-    if (existingScript) {
-      console.log('ℹ️ Google script already exists');
+    if (scriptLoaded.current || document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
       scriptLoaded.current = true;
       return;
     }
 
-    console.log('📥 Loading Google Sign-In script...');
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-      scriptLoaded.current = true;
-      console.log('✅ Google script loaded successfully');
-    };
-    script.onerror = () => {
-      console.error('❌ Failed to load Google script');
-    };
-
+    script.onload = () => { scriptLoaded.current = true; };
     document.body.appendChild(script);
-
-    return () => {
-      // Cleanup if needed
-    };
   }, []);
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated()) {
-      console.log('ℹ️ User already authenticated, redirecting.. .');
-      const dest = redirectTo || '/events';
-      navigate(dest, { state:  payload || null, replace: true });
+      navigate(redirectTo || '/', { state: payload || null, replace: true });
     }
   }, [navigate, redirectTo, payload]);
 
@@ -282,9 +234,6 @@ function TicketEaseAuth() {
     setLoading(true);
     setError('');
     setSuccess('');
-
-    console.log('🔐 Google login initiated');
-    console.log('🔑 Credential received:', !!response.credential);
 
     try {
       const res = await fetch(`${API_URL}/auth/google`, {
@@ -295,34 +244,23 @@ function TicketEaseAuth() {
 
       const data = await res.json();
 
-      console.log('📥 Server response:', {
-        status: res.status,
-        ok: res.ok,
-        hasToken: !!data.token,
-        hasUser: !!data.user
-      });
-
-      if (res.ok && data.token && data. user) {
-        saveAuth(data.token, data.user);
-        setSuccess('Google login successful!  Redirecting...');
-        
+      if (res.ok && data.token && data.user) {
+        saveAuth(data.token, data. user);
+        setSuccess('Google login successful!  Redirecting.. .');
         setTimeout(() => {
-          navigate(redirectTo || '/events', { state: payload || null });
+          navigate(redirectTo || '/', { state: payload || null });
         }, 1000);
       } else {
-        console.error('❌ Auth failed:', data);
         setError(data.error || data.message || 'Google authentication failed');
       }
     } catch (err) {
-      console.error('❌ Google auth error:', err);
-      setError('Failed to authenticate with Google. Please try again.');
+      setError('Failed to authenticate with Google.  Please try again.');
     } finally {
       setLoading(false);
     }
   }, [navigate, redirectTo, payload]);
 
   const handleGoogleError = useCallback((errorMsg) => {
-    console.error('❌ Google Sign-In error:', errorMsg);
     setError(errorMsg);
   }, []);
 
@@ -332,12 +270,11 @@ function TicketEaseAuth() {
       setError('Email and password are required.');
       return false;
     }
-    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRe.test(formData.email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData. email)) {
       setError('Please enter a valid email address.');
       return false;
     }
-    if (formData.password.length < 6) {
+    if (formData.password. length < 6) {
       setError('Password must be at least 6 characters.');
       return false;
     }
@@ -362,32 +299,26 @@ function TicketEaseAuth() {
     setError('');
     setSuccess('');
 
-    console.log(`🔐 ${isLogin ? 'Login' : 'Register'} attempt for: `, formData.email);
-
     try {
       const response = isLogin 
         ? await login({ email: formData.email, password: formData.password })
         : await register({ 
             name: formData.name, 
-            email: formData. email, 
+            email: formData.email, 
             phone: formData.phone, 
             password: formData. password 
           });
 
-      console.log('📥 Auth response:', { hasToken: !!response.token, hasUser: !!response.user });
-
       if (response.token && response.user) {
-        saveAuth(response.token, response.user);
+        saveAuth(response.token, response. user);
         setSuccess(isLogin ? 'Login successful!  Redirecting...' : 'Account created!  Redirecting...');
-        
         setTimeout(() => {
-          navigate(redirectTo || '/events', { state: payload || null });
+          navigate(redirectTo || '/', { state: payload || null });
         }, 1000);
       } else {
         setError('Authentication failed');
       }
     } catch (err) {
-      console.error('❌ Auth error:', err);
       setError(err.body?.error || err.message || (isLogin ? 'Invalid email or password' : 'Registration failed'));
     } finally {
       setLoading(false);
@@ -417,8 +348,9 @@ function TicketEaseAuth() {
     if (password.length >= 10) strength++;
     if (/[a-z]/.test(password) && /[A-Z]/. test(password)) strength++;
     if (/\d/.test(password)) strength++;
-    if (/[^a-zA-Z\d]/.test(password)) strength++;
-    if (strength <= 2) return { strength, label: 'Weak', color:  'bg-red-500' };
+    if (/[^a-zA-Z\d]/. test(password)) strength++;
+    
+    if (strength <= 2) return { strength, label: 'Weak', color: 'bg-red-500' };
     if (strength <= 3) return { strength, label: 'Fair', color: 'bg-yellow-500' };
     if (strength <= 4) return { strength, label: 'Good', color: 'bg-blue-500' };
     return { strength, label: 'Strong', color: 'bg-green-500' };
@@ -487,7 +419,7 @@ function TicketEaseAuth() {
                 className={`flex-1 py-2. 5 rounded-lg font-semibold text-sm transition-all duration-300 ${
                   isLogin 
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
-                    : 'text-gray-600 hover:text-gray-800'
+                    :  'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 Login
@@ -514,7 +446,7 @@ function TicketEaseAuth() {
                     Full Name <span className="text-red-500">*</span>
                   </label>
                   <div className={`relative transition-transform duration-200 ${focusedField === 'name' ? 'transform scale-[1.02]' : ''}`}>
-                    <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'name' ? 'text-purple-600' :  'text-gray-400'}`} />
+                    <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'name' ? 'text-purple-600' : 'text-gray-400'}`} />
                     <input 
                       type="text" 
                       name="name" 
@@ -536,7 +468,7 @@ function TicketEaseAuth() {
                   Email Address <span className="text-red-500">*</span>
                 </label>
                 <div className={`relative transition-transform duration-200 ${focusedField === 'email' ? 'transform scale-[1.02]' : ''}`}>
-                  <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'email' ? 'text-purple-600' : 'text-gray-400'}`} />
+                  <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'email' ? 'text-purple-600' :  'text-gray-400'}`} />
                   <input 
                     type="email" 
                     name="email" 
@@ -544,7 +476,7 @@ function TicketEaseAuth() {
                     onChange={handleChange} 
                     onFocus={() => setFocusedField('email')} 
                     onBlur={() => setFocusedField('')} 
-                    className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus:ring-4 focus: ring-purple-500/20 focus:border-purple-500 bg-gray-50 focus: bg-white" 
+                    className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus: ring-4 focus:ring-purple-500/20 focus: border-purple-500 bg-gray-50 focus:bg-white" 
                     placeholder="you@example.com" 
                     required 
                   />
@@ -581,7 +513,7 @@ function TicketEaseAuth() {
                 <div className={`relative transition-transform duration-200 ${focusedField === 'password' ? 'transform scale-[1.02]' : ''}`}>
                   <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'password' ? 'text-purple-600' : 'text-gray-400'}`} />
                   <input 
-                    type={showPassword ? 'text' : 'password'} 
+                    type={showPassword ? 'text' :  'password'} 
                     name="password" 
                     value={formData.password} 
                     onChange={handleChange} 
@@ -606,8 +538,8 @@ function TicketEaseAuth() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-medium text-gray-600">Password Strength:</span>
                       <span className={`text-xs font-bold ${
-                        passwordStrength.label === 'Weak' ? 'text-red-500' :  
-                        passwordStrength. label === 'Fair' ? 'text-yellow-500' :  
+                        passwordStrength.label === 'Weak' ? 'text-red-500' : 
+                        passwordStrength.label === 'Fair' ? 'text-yellow-500' : 
                         passwordStrength.label === 'Good' ? 'text-blue-500' : 
                         'text-green-500'
                       }`}>
@@ -654,7 +586,7 @@ function TicketEaseAuth() {
                       Terms of Service
                     </a>
                     {' '}and{' '}
-                    <a href="/privacy" className="font-semibold text-purple-600 hover: underline" onClick={(e) => e.preventDefault()}>
+                    <a href="/privacy" className="font-semibold text-purple-600 hover:underline" onClick={(e) => e.preventDefault()}>
                       Privacy Policy
                     </a>
                   </label>
