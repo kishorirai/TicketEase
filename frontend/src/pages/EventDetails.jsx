@@ -4,7 +4,8 @@ import {
   Calendar, Clock, MapPin, Users, Star, Share2, Heart, ChevronLeft, ChevronRight, 
   Plus, Minus, Check, AlertCircle, ExternalLink, Navigation, Ticket, Shield,
   TrendingUp, Award, MessageCircle, Download, Bell, X, Zap, Gift, Info,
-  ChevronDown, ChevronUp, Facebook, Twitter, Linkedin, Copy, Mail
+  Facebook, Twitter, Linkedin, Copy, Mail, DollarSign, Phone, Mail as MailIcon,
+  Globe, Tag, Sparkles, Building2, Image as ImageIcon, Video
 } from "lucide-react";
 import { fetchEventById } from "./api";
 import { isAuthenticated } from "../utils/auth";
@@ -25,10 +26,10 @@ const EventDetails = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [isImageFullscreen, setIsImageFullscreen] = useState(false);
-  const [expandedSection, setExpandedSection] = useState(null);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [reminderSet, setReminderSet] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   // Load event from backend
   useEffect(() => {
@@ -100,7 +101,6 @@ const EventDetails = () => {
         return rest;
       }
       
-      // Show notification for ticket change
       showNotificationMessage(`${change > 0 ? 'Added' : 'Removed'} ${ticket?.name}`);
       
       return { ...prev, [ticketId]:  newCount };
@@ -110,7 +110,7 @@ const EventDetails = () => {
   const getTotalAmount = () => {
     return Object.entries(selectedTickets).reduce((total, [ticketId, count]) => {
       const ticket = ticketCategories.find((t) => String(t._id || t.id) === String(ticketId));
-      return total + (ticket ?  ticket.price * count : 0);
+      return total + (ticket ? ticket.price * count :  0);
     }, 0);
   };
 
@@ -182,7 +182,7 @@ const EventDetails = () => {
 
   const handleShare = (platform) => {
     const url = window.location.href;
-    const text = `Check out ${event.title}! `;
+    const text = `Check out ${event. title}! `;
     
     const shareUrls = {
       facebook: `https://www.facebook.com/sharer/sharer.php? u=${encodeURIComponent(url)}`,
@@ -241,7 +241,7 @@ const EventDetails = () => {
     event ?  formatDateTime(event.date) : { date: "", time: "", isPast: false, daysUntil: null };
 
   const getTotalSeats = () => {
-    if (!ticketCategories. length) return 0;
+    if (!ticketCategories.length) return 0;
     return ticketCategories.reduce((sum, t) => sum + (t.total || 0), 0);
   };
 
@@ -259,6 +259,16 @@ const EventDetails = () => {
     if (percentage > 20) return { color: "yellow", text: "Selling Fast" };
     if (percentage > 0) return { color: "red", text: "Almost Sold Out" };
     return { color: "gray", text: "Sold Out" };
+  };
+
+  const getMinPrice = () => {
+    if (ticketCategories.length === 0) return 0;
+    return Math.min(...ticketCategories. map(t => t.price));
+  };
+
+  const getMaxPrice = () => {
+    if (ticketCategories.length === 0) return 0;
+    return Math.max(...ticketCategories.map(t => t.price));
   };
 
   const rating = event?.rating || 4.5;
@@ -325,7 +335,7 @@ const EventDetails = () => {
           <div className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">{getTotalTickets()} tickets</p>
-              <p className="text-2xl font-bold text-gray-800">${getTotalAmount()}</p>
+              <p className="text-2xl font-bold text-gray-800">₹{getTotalAmount()}</p>
             </div>
             <button
               onClick={handleProceed}
@@ -375,6 +385,55 @@ const EventDetails = () => {
         </div>
       )}
 
+      {/* Contact Organizer Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowContactModal(false)}>
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-800">Contact Organizer</h3>
+              <button onClick={() => setShowContactModal(false)} className="text-gray-500 hover:text-gray-700">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {event.organizer && (
+                <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl">
+                  <Building2 className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-xs text-gray-500">Organized by</p>
+                    <p className="font-bold text-gray-800">{event.organizer}</p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                <Phone className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="text-xs text-gray-500">Phone</p>
+                  <p className="font-bold text-gray-800">+1 (555) 123-4567</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl">
+                <MailIcon className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="text-xs text-gray-500">Email</p>
+                  <p className="font-bold text-gray-800">info@event.com</p>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => showNotificationMessage("📧 Message sent to organizer!")}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-xl font-bold hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+              >
+                Send Message
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Fullscreen Image Modal */}
       {isImageFullscreen && (
         <div className="fixed inset-0 bg-black z-50 flex items-center justify-center" onClick={() => setIsImageFullscreen(false)}>
@@ -383,7 +442,7 @@ const EventDetails = () => {
           </button>
           <img
             src={images[currentImageIndex]}
-            alt={event. title}
+            alt={event.title}
             className="max-w-full max-h-full object-contain"
           />
         </div>
@@ -408,11 +467,9 @@ const EventDetails = () => {
             />
           ))}
           
-          {/* Gradient Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-purple-900/30 to-blue-900/30" />
           
-          {/* Image Navigation */}
           {images.length > 1 && (
             <>
               <button
@@ -428,16 +485,15 @@ const EventDetails = () => {
                 <ChevronRight className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
               </button>
               
-              {/* Image Indicators */}
               <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-                {images. map((_, idx) => (
+                {images.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentImageIndex(idx)}
                     className={`h-2 rounded-full transition-all duration-300 ${
                       idx === currentImageIndex 
                         ? "w-10 bg-white shadow-lg" 
-                        : "w-2 bg-white/50 hover:bg-white/75"
+                        :  "w-2 bg-white/50 hover:bg-white/75"
                     }`}
                   />
                 ))}
@@ -445,7 +501,6 @@ const EventDetails = () => {
             </>
           )}
           
-          {/* Event Header Info */}
           <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
             <div className="max-w-7xl mx-auto">
               <div className="flex flex-wrap gap-3 mb-4">
@@ -464,7 +519,7 @@ const EventDetails = () => {
                     <Zap className="w-4 h-4" /> {daysUntil} {daysUntil === 1 ? 'Day' : 'Days'} Left
                   </span>
                 )}
-                {availabilityStatus.color === 'red' && (
+                {availabilityStatus. color === 'red' && (
                   <span className="px-4 py-2 bg-red-600 rounded-full text-sm font-bold text-white shadow-lg flex items-center gap-2 animate-pulse">
                     <TrendingUp className="w-4 h-4" /> Almost Sold Out
                   </span>
@@ -477,36 +532,53 @@ const EventDetails = () => {
               
               {event.subtitle && (
                 <p className="text-xl md:text-2xl text-gray-100 drop-shadow-lg max-w-3xl">
-                  {event. subtitle}
+                  {event.subtitle}
                 </p>
               )}
             </div>
           </div>
-          
-          {/* Action Buttons (Top Right) */}
-          <div className="absolute top-6 right-6 flex gap-3">
-            <ActionButton
-              icon={<Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />}
-              active={isLiked}
-              onClick={handleLike}
-              tooltip="Add to Favorites"
-            />
-            <ActionButton
-              icon={<Bell className={`w-5 h-5 ${reminderSet ? "fill-current" : ""}`} />}
-              active={reminderSet}
-              onClick={handleReminder}
-              tooltip="Set Reminder"
-            />
-            <ActionButton
-              icon={<Share2 className="w-5 h-5" />}
-              onClick={() => setShowShareModal(true)}
-              tooltip="Share Event"
-            />
-            <ActionButton
-              icon={<Download className="w-5 h-5" />}
-              onClick={() => showNotificationMessage("📥 Download feature coming soon!")}
-              tooltip="Download Info"
-            />
+        </div>
+      </div>
+
+      {/* Action Buttons Row - Below Carousel */}
+      <div className="bg-white border-b border-gray-200 shadow-md sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <ActionButton
+                icon={<Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />}
+                label="Favorite"
+                active={isLiked}
+                onClick={handleLike}
+              />
+              <ActionButton
+                icon={<Bell className={`w-5 h-5 ${reminderSet ? "fill-current" : ""}`} />}
+                label="Remind Me"
+                active={reminderSet}
+                onClick={handleReminder}
+              />
+              <ActionButton
+                icon={<Share2 className="w-5 h-5" />}
+                label="Share"
+                onClick={() => setShowShareModal(true)}
+              />
+              <ActionButton
+                icon={<MessageCircle className="w-5 h-5" />}
+                label="Contact"
+                onClick={() => setShowContactModal(true)}
+              />
+            </div>
+            
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-2 text-gray-600">
+                <Calendar className="w-4 h-4" />
+                <span className="font-medium">{formattedDate}</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600">
+                <MapPin className="w-4 h-4" />
+                <span className="font-medium">{event.city || event.location}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -515,13 +587,13 @@ const EventDetails = () => {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Event Details */}
-          <div className="lg: col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* Quick Info Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <InfoCard 
                 icon={<Calendar className="w-6 h-6 text-blue-600" />} 
                 label="Date" 
-                value={formattedDate}
+                value={formattedDate. split(',')[0]}
                 gradient="from-blue-50 to-blue-100"
               />
               <InfoCard 
@@ -536,25 +608,25 @@ const EventDetails = () => {
                 value={`${getAvailableSeats()} / ${getTotalSeats()}`}
                 gradient="from-purple-50 to-purple-100"
                 badge={availabilityStatus.text}
-                badgeColor={availabilityStatus.color}
+                badgeColor={availabilityStatus. color}
               />
               <InfoCard 
-                icon={<Star className="w-6 h-6 text-yellow-600" />} 
-                label="Rating" 
-                value={reviews > 0 ? `${rating} ⭐` : "New Event"}
+                icon={<DollarSign className="w-6 h-6 text-yellow-600" />} 
+                label="Price Range" 
+                value={getMinPrice() === getMaxPrice() ? `₹${getMinPrice()}` : `₹${getMinPrice()} - ₹${getMaxPrice()}`}
                 gradient="from-yellow-50 to-yellow-100"
-                subtext={reviews > 0 ?  `${reviews} reviews` : "Be the first"}
               />
             </div>
 
             {/* Event Description */}
-            <ExpandableSection
-              title="About This Event"
-              icon={<Info className="w-6 h-6" />}
-              defaultExpanded={true}
-              expanded={expandedSection === 'about'}
-              onToggle={() => setExpandedSection(expandedSection === 'about' ? null : 'about')}
-            >
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg p-2">
+                  <Info className="w-6 h-6" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800">About This Event</h2>
+              </div>
+              
               <div className="prose prose-lg max-w-none text-gray-700 whitespace-pre-line leading-relaxed">
                 {event.description || "No description available. "}
               </div>
@@ -562,7 +634,7 @@ const EventDetails = () => {
               {event.highlights && event.highlights.length > 0 && (
                 <div className="mt-8">
                   <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-yellow-500" />
+                    <Sparkles className="w-5 h-5 text-yellow-500" />
                     Event Highlights
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -581,7 +653,6 @@ const EventDetails = () => {
                 </div>
               )}
 
-              {/* Additional Event Info */}
               <div className="mt-8 grid grid-cols-1 md: grid-cols-2 gap-4">
                 <InfoBox 
                   icon={<Shield className="w-5 h-5 text-blue-600" />}
@@ -604,23 +675,61 @@ const EventDetails = () => {
                   description="We're here to help with any questions"
                 />
               </div>
-            </ExpandableSection>
+            </div>
+
+            {/* Organizer Info */}
+            {event.organizer && (
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg p-2">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800">Event Organizer</h2>
+                </div>
+                
+                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-gradient-to-br from-purple-600 to-blue-600 rounded-full w-16 h-16 flex items-center justify-center text-white text-2xl font-bold">
+                      {event.organizer.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">{event.organizer}</h3>
+                      <p className="text-sm text-gray-600">Professional Event Organizer</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="text-sm font-semibold text-gray-700">4.8 Rating</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowContactModal(true)}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all transform hover: scale-105 shadow-lg"
+                  >
+                    Contact Organizer
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Location Section */}
             {(event.address || event.location) && (
-              <ExpandableSection
-                title="Event Location"
-                icon={<MapPin className="w-6 h-6" />}
-                defaultExpanded={true}
-                expanded={expandedSection === 'location'}
-                onToggle={() => setExpandedSection(expandedSection === 'location' ? null : 'location')}
-              >
+              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg p-2">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800">Event Location</h2>
+                </div>
+                
                 <div className="flex items-start gap-4 mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200">
                   <div className="bg-red-500 rounded-full p-3">
                     <MapPin className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-xl text-gray-800 mb-1">{event.location}</h3>
+                    {event.city && (
+                      <p className="text-gray-600 mb-1">{event.city}</p>
+                    )}
                     {event.address && (
                       <p className="text-gray-600">{event.address}</p>
                     )}
@@ -629,7 +738,6 @@ const EventDetails = () => {
                 
                 {event.address && (
                   <>
-                    {/* Map Placeholder */}
                     <div className="relative w-full h-96 rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 mb-6">
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <div className="bg-white rounded-full p-6 shadow-xl mb-4">
@@ -640,8 +748,7 @@ const EventDetails = () => {
                       </div>
                     </div>
                     
-                    {/* Action Buttons */}
-                    <div className="grid grid-cols-1 md: grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <a
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.address)}`}
                         target="_blank"
@@ -663,33 +770,46 @@ const EventDetails = () => {
                     </div>
                   </>
                 )}
-              </ExpandableSection>
+              </div>
             )}
 
-            {/* Reviews Section (Placeholder) */}
-            <ExpandableSection
-              title="Reviews & Ratings"
-              icon={<Star className="w-6 h-6" />}
-              badge={reviews > 0 ? `${reviews} reviews` : "Be the first"}
-              expanded={expandedSection === 'reviews'}
-              onToggle={() => setExpandedSection(expandedSection === 'reviews' ? null : 'reviews')}
-            >
-              <div className="text-center py-12">
-                <div className="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-10 h-10 text-gray-400" />
+            {/* Terms & Conditions */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg p-2">
+                  <Shield className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">No reviews yet</h3>
-                <p className="text-gray-600 mb-6">Be the first to review this event after attending!</p>
-                <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg">
-                  Write a Review
-                </button>
+                <h2 className="text-2xl font-bold text-gray-800">Terms & Conditions</h2>
               </div>
-            </ExpandableSection>
+              
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p>Tickets once booked cannot be exchanged or refunded</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p>An internet handling fee per ticket may be levied</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p>We recommend that you arrive at least 30 minutes prior to the show time</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p>Please carry a valid ID proof along with your ticket</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <p>Outside food and beverages are not allowed</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Booking Panel */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6 space-y-6" ref={summaryRef}>
+            <div className="sticky top-24 space-y-6" ref={summaryRef}>
               {/* Ticket Selection */}
               <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border-2 border-purple-100">
                 <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6 text-white">
@@ -721,54 +841,6 @@ const EventDetails = () => {
                   onProceed={handleProceed}
                 />
               )}
-              
-              {/* Organizer Info */}
-              {event.organizer && (
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-purple-600" />
-                    Organized by
-                  </h3>
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-full w-12 h-12 flex items-center justify-center">
-                      <span className="text-xl font-bold text-purple-600">
-                        {event.organizer.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-gray-800 font-bold text-lg">{event.organizer}</p>
-                      <p className="text-sm text-gray-500">Event Organizer</p>
-                    </div>
-                  </div>
-                  <button className="w-full border-2 border-purple-600 text-purple-600 py-3 rounded-xl font-semibold hover:bg-purple-50 transition-all transform hover:scale-105 flex items-center justify-center gap-2">
-                    <MessageCircle className="w-4 h-4" />
-                    Contact Organizer
-                  </button>
-                </div>
-              )}
-
-              {/* Trust Badges */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border border-gray-200">
-                <h3 className="font-bold mb-4 text-gray-800">Why Book With Us?</h3>
-                <div className="space-y-3">
-                  <TrustBadge 
-                    icon={<Shield className="w-5 h-5 text-green-600" />}
-                    text="Secure Payment"
-                  />
-                  <TrustBadge 
-                    icon={<Zap className="w-5 h-5 text-yellow-600" />}
-                    text="Instant Confirmation"
-                  />
-                  <TrustBadge 
-                    icon={<Award className="w-5 h-5 text-purple-600" />}
-                    text="Best Price Guarantee"
-                  />
-                  <TrustBadge 
-                    icon={<MessageCircle className="w-5 h-5 text-blue-600" />}
-                    text="24/7 Customer Support"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -779,25 +851,19 @@ const EventDetails = () => {
 
 // ===== HELPER COMPONENTS =====
 
-function ActionButton({ icon, active, onClick, tooltip }) {
+function ActionButton({ icon, label, active, onClick }) {
   return (
-    <div className="group relative">
-      <button
-        onClick={onClick}
-        className={`p-3 rounded-full backdrop-blur-md transition-all shadow-lg transform hover:scale-110 ${
-          active 
-            ? "bg-gradient-to-r from-red-500 to-pink-500 text-white" 
-            : "bg-white/20 text-white hover:bg-white/30"
-        }`}
-      >
-        {icon}
-      </button>
-      {tooltip && (
-        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-black text-white text-xs py-1 px-3 rounded-lg opacity-0 group-hover: opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-          {tooltip}
-        </div>
-      )}
-    </div>
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all shadow-md transform hover:scale-105 ${
+        active 
+          ? "bg-gradient-to-r from-red-500 to-pink-500 text-white" 
+          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+      }`}
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+    </button>
   );
 }
 
@@ -820,9 +886,9 @@ function InfoCard({ icon, label, value, gradient, badge, badgeColor, subtext }) 
         {icon}
         {badge && (
           <span className={`text-xs px-2 py-1 rounded-full font-bold ${
-            badgeColor === 'green' ?  'bg-green-500 text-white' : 
+            badgeColor === 'green' ? 'bg-green-500 text-white' : 
             badgeColor === 'yellow' ? 'bg-yellow-500 text-white' : 
-            badgeColor === 'red' ? 'bg-red-500 text-white' : 
+            badgeColor === 'red' ?  'bg-red-500 text-white' : 
             'bg-gray-500 text-white'
           }`}>
             {badge}
@@ -846,53 +912,6 @@ function InfoBox({ icon, title, description }) {
         <h4 className="font-bold text-gray-800 mb-1">{title}</h4>
         <p className="text-sm text-gray-600">{description}</p>
       </div>
-    </div>
-  );
-}
-
-function TrustBadge({ icon, text }) {
-  return (
-    <div className="flex items-center gap-3 text-gray-700">
-      <div className="bg-white rounded-lg p-2 shadow-sm">
-        {icon}
-      </div>
-      <span className="font-medium">{text}</span>
-    </div>
-  );
-}
-
-function ExpandableSection({ title, icon, children, badge, defaultExpanded, expanded, onToggle }) {
-  const isExpanded = expanded ?? defaultExpanded;
-  
-  return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-6 hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg p-2">
-            {icon}
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
-          {badge && (
-            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-              {badge}
-            </span>
-          )}
-        </div>
-        {isExpanded ? (
-          <ChevronUp className="w-6 h-6 text-gray-400" />
-        ) : (
-          <ChevronDown className="w-6 h-6 text-gray-400" />
-        )}
-      </button>
-      
-      {isExpanded && (
-        <div className="px-6 pb-6 animate-slide-down">
-          {children}
-        </div>
-      )}
     </div>
   );
 }
@@ -925,8 +944,8 @@ function TicketSelector({ ticketCategories, selectedTickets, handleTicketChange 
             key={ticketId}
             className={`relative border-2 rounded-2xl p-5 transition-all duration-300 ${
               isSelected 
-                ?  "border-purple-500 bg-gradient-to-br from-purple-50 to-blue-50 shadow-lg" 
-                :  "border-gray-200 bg-white hover:border-purple-300 hover:shadow-md"
+                ? "border-purple-500 bg-gradient-to-br from-purple-50 to-blue-50 shadow-lg" 
+                : "border-gray-200 bg-white hover:border-purple-300 hover:shadow-md"
             }`}
           >
             {isSelected && (
@@ -953,17 +972,16 @@ function TicketSelector({ ticketCategories, selectedTickets, handleTicketChange 
                 <div className="flex items-center gap-2">
                   {ticket.originalPrice && ticket.originalPrice > ticket.price && (
                     <span className="text-sm text-gray-400 line-through">
-                      ${ticket.originalPrice}
+                      ₹{ticket.originalPrice}
                     </span>
                   )}
                   <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                    ${ticket.price}
+                    ₹{ticket.price}
                   </span>
                 </div>
               </div>
             </div>
             
-            {/* Features */}
             {ticket.features && ticket.features.length > 0 && (
               <div className="space-y-2 mb-4 p-3 bg-white/70 rounded-xl">
                 {ticket.features.map((feature, idx) => (
@@ -975,7 +993,6 @@ function TicketSelector({ ticketCategories, selectedTickets, handleTicketChange 
               </div>
             )}
             
-            {/* Availability Bar */}
             <div className="mb-4">
               <div className="flex justify-between text-xs font-semibold mb-2">
                 <span className="text-gray-600">
@@ -984,7 +1001,7 @@ function TicketSelector({ ticketCategories, selectedTickets, handleTicketChange 
                 </span>
                 <span className={`${
                   availabilityPercent > 50 ? 'text-green-600' : 
-                  availabilityPercent > 20 ? 'text-yellow-600' :
+                  availabilityPercent > 20 ? 'text-yellow-600' : 
                   'text-red-600'
                 }`}>
                   {Math.round(availabilityPercent)}%
@@ -997,14 +1014,13 @@ function TicketSelector({ ticketCategories, selectedTickets, handleTicketChange 
                       ? "from-green-400 to-green-600"
                       : availabilityPercent > 20
                       ? "from-yellow-400 to-yellow-600"
-                      :  "from-red-400 to-red-600"
+                      : "from-red-400 to-red-600"
                   }`}
                   style={{ width: `${availabilityPercent}%` }}
                 />
               </div>
             </div>
             
-            {/* Quantity Selector */}
             <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 p-3 rounded-xl">
               <span className="text-sm font-bold text-gray-700">Quantity: </span>
               <div className="flex items-center gap-4">
@@ -1051,29 +1067,27 @@ function BookingSummary({ ticketCategories, selectedTickets, getTotalTickets, ge
       </div>
       
       <div className="p-6 space-y-4">
-        {/* Ticket Breakdown */}
         <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 space-y-3">
           {Object.entries(selectedTickets).map(([ticketId, count]) => {
             const ticket = ticketCategories.find((t) => String(t._id || t.id) === String(ticketId));
             return (
               <div key={ticketId} className="flex justify-between items-center text-white">
                 <div className="flex-1">
-                  <p className="font-semibold">{ticket?.name}</p>
+                  <p className="font-semibold">{ticket?. name}</p>
                   <p className="text-xs text-white/70">
-                    ${ticket?.price} × {count}
+                    ₹{ticket?.price} × {count}
                   </p>
                 </div>
-                <span className="font-bold text-lg">${ticket ?  ticket.price * count : 0}</span>
+                <span className="font-bold text-lg">₹{ticket ?  ticket.price * count : 0}</span>
               </div>
             );
           })}
         </div>
         
-        {/* Total */}
         <div className="bg-white/20 backdrop-blur-sm rounded-xl p-5 border-2 border-white/30">
           <div className="flex justify-between items-center mb-2">
             <span className="text-white text-lg font-semibold">Total Amount</span>
-            <span className="text-white text-4xl font-bold">${getTotalAmount()}</span>
+            <span className="text-white text-4xl font-bold">₹{getTotalAmount()}</span>
           </div>
           <p className="text-white/90 text-sm flex items-center gap-2">
             <Ticket className="w-4 h-4" />
@@ -1081,7 +1095,6 @@ function BookingSummary({ ticketCategories, selectedTickets, getTotalTickets, ge
           </p>
         </div>
         
-        {/* Proceed Button */}
         <button
           type="button"
           onClick={onProceed}
@@ -1091,7 +1104,6 @@ function BookingSummary({ ticketCategories, selectedTickets, getTotalTickets, ge
           Proceed to Secure Checkout
         </button>
         
-        {/* Trust Indicators */}
         <div className="flex items-center justify-center gap-4 text-white/80 text-xs pt-2">
           <div className="flex items-center gap-1">
             <Shield className="w-4 h-4" />
@@ -1111,7 +1123,6 @@ function BookingSummary({ ticketCategories, selectedTickets, getTotalTickets, ge
   );
 }
 
-// Add custom animations to your CSS/Tailwind config
 const style = document.createElement('style');
 style.textContent = `
   @keyframes slide-in-right {
@@ -1125,23 +1136,8 @@ style.textContent = `
     }
   }
   
-  @keyframes slide-down {
-    from {
-      opacity: 0;
-      max-height: 0;
-    }
-    to {
-      opacity: 1;
-      max-height: 2000px;
-    }
-  }
-  
   .animate-slide-in-right {
     animation: slide-in-right 0.3s ease-out;
-  }
-  
-  .animate-slide-down {
-    animation: slide-down 0.3s ease-out;
   }
 `;
 document.head.appendChild(style);
