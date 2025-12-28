@@ -17,9 +17,9 @@ if (GOOGLE_CLIENT_ID) {
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-// ============================================
+
 // POST /api/auth/signup (Regular Email/Password)
-// ============================================
+
 router.post(
   '/signup',
   [

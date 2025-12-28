@@ -14,6 +14,7 @@ const EventSchema = new mongoose.Schema({
   category: { type: String },
   location: { type: String },
   address: { type: String },
+  city: { type: String, index: true },
   date: { type: Date, required:  true },
   description: { type: String },
   images: { type: [String], default: [] },

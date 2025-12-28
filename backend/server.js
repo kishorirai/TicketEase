@@ -9,9 +9,7 @@ const bookingRoutes = require('./routes/bookingroute');
 
 const app = express();
 
-// ============================================
 // CORS Configuration
-// ============================================
 const allowedOrigins = [
   'http://localhost:5173',  // Vite default
   'http://localhost:3000',  // React default

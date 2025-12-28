@@ -2,12 +2,12 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const Event = require('./models/Event');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ticket-ease';
+const MONGODB_URI = process.env. MONGODB_URI || 'mongodb://localhost:27017/ticket-ease';
 
 async function run() {
   console.log('Using MONGODB_URI:', MONGODB_URI);
   await mongoose.connect(MONGODB_URI, { autoIndex: true });
-  console.log('Connected to MongoDB for seeding ->', mongoose.connection. name, mongoose.connection.host);
+  console.log('Connected to MongoDB for seeding ->', mongoose.connection.name, mongoose.connection.host);
 
   console.log('Clearing events collection...');
   const del = await Event.deleteMany({});
@@ -19,11 +19,12 @@ async function run() {
       subtitle: 'An evening of smooth jazz by the riverside',
       category: 'Live Music',
       location: 'Riverside Park',
-      address: '123 River Walk, Downtown',
+      address:  '123 River Walk, Downtown',
+      city: 'San Francisco',
       date: new Date('2026-06-15T19:30:00Z'),
-      description: 'Join us for a magical evening of jazz under the sunset.  Featuring renowned artists from around the world, this outdoor concert promises an unforgettable experience with smooth melodies and stunning views.\n\nBring your blankets and picnic baskets for a perfect summer evening!',
+      description:  'Join us for a magical evening of jazz under the sunset. Featuring renowned artists from around the world, this outdoor concert promises an unforgettable experience with smooth melodies and stunning views.\n\nBring your blankets and picnic baskets for a perfect summer evening! ',
       images: [
-        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4? w=1600&q=80&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1600&q=80&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1600&q=80&auto=format&fit=crop'
       ],
       highlights: [
@@ -32,21 +33,21 @@ async function run() {
         'Food trucks and refreshments',
         'Family-friendly atmosphere'
       ],
-      organizer: 'City Arts Foundation',
+      organizer:  'City Arts Foundation',
       rating: 4.7,
       reviews: 234,
       ticket_types: [
         { 
-          name: 'General Admission', 
+          name:  'General Admission', 
           description: 'Open lawn seating', 
-          price:  25, 
-          available:  150, 
+          price: 25, 
+          available: 150, 
           total: 200,
           features: ['Access to main lawn area', 'First-come seating']
         },
         { 
           name: 'VIP Seating', 
-          description: 'Reserved premium seats', 
+          description:  'Reserved premium seats', 
           price: 75, 
           available: 15, 
           total: 50,
@@ -54,7 +55,7 @@ async function run() {
           features: ['Reserved seating', 'Complimentary drink', 'VIP parking']
         },
         { 
-          name:  'Family Pack (4 tickets)', 
+          name: 'Family Pack (4 tickets)', 
           description: 'Perfect for families', 
           price:  80, 
           available: 25, 
@@ -65,11 +66,12 @@ async function run() {
       ]
     },
     {
-      title: 'Tech Talks: AI & Ethics',
+      title: 'Tech Talks:  AI & Ethics',
       subtitle: 'Conversations on responsible AI development',
       category: 'Conference',
       location: 'Grand Convention Center',
       address: '500 Convention Ave, Tech District',
+      city:  'Seattle',
       date: new Date('2026-07-03T09:00:00Z'),
       description: 'A full-day conference featuring talks from leading researchers, ethicists, and industry pioneers exploring the intersection of artificial intelligence and ethics.\n\nJoin us for thought-provoking discussions, networking opportunities, and hands-on workshops about building AI responsibly.',
       images: [
@@ -83,14 +85,14 @@ async function run() {
         'Certificate of attendance',
         'Access to recorded sessions'
       ],
-      organizer: 'Tech Ethics Institute',
+      organizer:  'Tech Ethics Institute',
       rating: 4.9,
       reviews: 567,
       ticket_types: [
         { 
           name:  'Standard Pass', 
           description: 'Full conference access', 
-          price:  149, 
+          price: 149, 
           available: 250, 
           total: 400,
           features: ['All sessions access', 'Lunch included', 'Conference materials']
@@ -107,7 +109,7 @@ async function run() {
         { 
           name: 'Virtual Attendance', 
           description: 'Join remotely', 
-          price:  79, 
+          price: 79, 
           available: 500, 
           total: 1000,
           features: ['Live stream access', 'Recorded sessions', 'Digital materials']
@@ -120,6 +122,7 @@ async function run() {
       category: 'Music Festival',
       location: 'Meadowlands Festival Grounds',
       address: '789 Festival Way, Meadowlands',
+      city: 'Austin',
       date: new Date('2026-08-20T12:00:00Z'),
       description: 'The biggest music festival of the summer returns!  Experience three unforgettable days featuring 50+ artists across multiple stages, including headliners from rock, pop, hip-hop, and electronic music.\n\nWith camping options, food vendors, art installations, and non-stop entertainment, this is the ultimate summer experience.',
       images: [
@@ -135,7 +138,7 @@ async function run() {
         'Art installations and workshops',
         'Silent disco after-parties'
       ],
-      organizer: 'MegaFest Productions',
+      organizer:  'MegaFest Productions',
       rating: 4.8,
       reviews: 1243,
       ticket_types: [
@@ -166,7 +169,7 @@ async function run() {
         },
         { 
           name:  'Camping Add-on', 
-          description: 'Camping for 3 nights', 
+          description:  'Camping for 3 nights', 
           price: 150, 
           available: 200, 
           total: 500,
@@ -180,7 +183,8 @@ async function run() {
       category: 'Theater',
       location: 'Royal Theater',
       address: '250 Broadway Street, Theater District',
-      date:  new Date('2026-09-12T19:00:00Z'),
+      city:  'New York',
+      date: new Date('2026-09-12T19:00:00Z'),
       description: 'Experience the magic of Broadway with this stunning musical revue featuring songs from Hamilton, Wicked, The Phantom of the Opera, Les Misérables, and more.\n\nPerformed by a talented ensemble cast with a live orchestra, this show celebrates the greatest moments in musical theater history.',
       images: [
         'https://images.unsplash.com/photo-1503095396549-807759245b35?w=1600&q=80&auto=format&fit=crop',
@@ -229,8 +233,9 @@ async function run() {
       category: 'Business',
       location: 'Innovation Hub',
       address: '1000 Entrepreneur Blvd, Business Park',
+      city: 'Boston',
       date: new Date('2026-07-25T08:30:00Z'),
-      description:  'The premier gathering for startup founders, investors, and innovators.  Learn from successful entrepreneurs, pitch to investors, and network with fellow founders.\n\nThis intensive one-day summit features keynotes, workshops, pitch competitions, and countless networking opportunities.',
+      description:  'The premier gathering for startup founders, investors, and innovators. Learn from successful entrepreneurs, pitch to investors, and network with fellow founders.\n\nThis intensive one-day summit features keynotes, workshops, pitch competitions, and countless networking opportunities.',
       images: [
         'https://images.unsplash.com/photo-1559223607-0c2e69b63493?w=1600&q=80&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=1600&q=80&auto=format&fit=crop'
@@ -280,6 +285,7 @@ async function run() {
       category: 'Food & Drink',
       location: 'Harbor Front Plaza',
       address: '888 Harbor Drive, Waterfront',
+      city: 'Miami',
       date: new Date('2026-09-05T11:00:00Z'),
       description: 'Embark on a culinary journey around the world without leaving the city!  Sample dishes from 40+ countries, enjoy wine tastings from renowned vineyards, and watch live cooking demonstrations from celebrity chefs.\n\nThis two-day festival celebrates global cuisine with authentic flavors, cultural performances, and incredible atmosphere.',
       images: [
@@ -332,8 +338,9 @@ async function run() {
       category: 'Sports',
       location: 'City Marathon Route',
       address: 'Starting Point:  City Hall, 100 Main Street',
+      city: 'Chicago',
       date: new Date('2026-10-10T06:00:00Z'),
-      description: 'Join thousands of runners in our annual marathon supporting local children\'s hospitals. Choose from full marathon (26.2 mi), half marathon (13.1 mi), 10K, or 5K fun run.\n\nAll participants receive a medal, t-shirt, and post-race celebration with food and entertainment. 100% of proceeds benefit Children\'s Healthcare Foundation.',
+      description: 'Join thousands of runners in our annual marathon supporting local children\'s hospitals. Choose from full marathon (26.2 mi), half marathon (13.1 mi), 10K, or 5K fun run.\n\nAll participants receive a medal, t-shirt, and post-race celebration with food and entertainment.  100% of proceeds benefit Children\'s Healthcare Foundation.',
       images: [
         'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=1600&q=80&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1532444458054-01a7dd3e9fca?w=1600&q=80&auto=format&fit=crop'
@@ -391,8 +398,9 @@ async function run() {
       category: 'Comedy',
       location: 'The Laugh Factory',
       address:  '456 Comedy Lane, Entertainment District',
+      city: 'Los Angeles',
       date: new Date('2026-08-07T20:00:00Z'),
-      description: 'Get ready for a hilarious night featuring three of the hottest comedians on the circuit! From observational humor to edgy social commentary, this show has something for everyone.\n\nAges 18+ only. Show includes strong language and adult themes.',
+      description: 'Get ready for a hilarious night featuring three of the hottest comedians on the circuit!  From observational humor to edgy social commentary, this show has something for everyone.\n\nAges 18+ only. Show includes strong language and adult themes.',
       images: [
         'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?w=1600&q=80&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=1600&q=80&auto=format&fit=crop'
@@ -411,7 +419,7 @@ async function run() {
         { 
           name:  'General Admission', 
           description: 'Standard seating', 
-          price: 35, 
+          price:  35, 
           available: 80, 
           total: 150,
           features: ['Show admission', 'First-come seating']
@@ -426,7 +434,7 @@ async function run() {
         },
         { 
           name: 'VIP Table (4 people)', 
-          description:  'Private table', 
+          description: 'Private table', 
           price: 250, 
           available: 5, 
           total: 10,
@@ -437,10 +445,11 @@ async function run() {
     },
     {
       title: 'Digital Art Exhibition:  Future Visions',
-      subtitle: 'Immersive NFT and digital art showcase',
+      subtitle:  'Immersive NFT and digital art showcase',
       category: 'Art & Culture',
       location: 'Modern Art Museum',
       address: '300 Museum Avenue, Arts District',
+      city: 'Portland',
       date: new Date('2026-07-15T10:00:00Z'),
       description: 'Step into the future of art with this groundbreaking exhibition featuring digital artists from around the world. Experience interactive installations, virtual reality art, projection mapping, and exclusive NFT collections.\n\nThe exhibition runs for 30 days with special evening events every Friday featuring artist talks and live digital art creation.',
       images: [
@@ -480,7 +489,7 @@ async function run() {
         { 
           name: 'Family Pack (2 adults + 2 kids)', 
           description: 'Perfect for families', 
-          price:  55, 
+          price: 55, 
           available: 80, 
           total: 150,
           features: ['4 tickets', 'Kids activity booklets', 'One-time entry']
@@ -493,8 +502,9 @@ async function run() {
       category: 'Wellness',
       location: 'Mountain Zen Retreat Center',
       address: '2000 Mountain Road, Peaceful Valley',
+      city: 'Denver',
       date: new Date('2026-09-20T15:00:00Z'),
-      description: 'Escape the chaos of daily life with our 3-day yoga and wellness retreat.  Immerse yourself in daily yoga sessions, meditation workshops, healthy gourmet meals, spa treatments, and nature walks.\n\nAll levels welcome. Accommodation options include shared rooms, private rooms, and luxury cabins.',
+      description: 'Escape the chaos of daily life with our 3-day yoga and wellness retreat.  Immerse yourself in daily yoga sessions, meditation workshops, healthy gourmet meals, spa treatments, and nature walks.\n\nAll levels welcome.  Accommodation options include shared rooms, private rooms, and luxury cabins.',
       images: [
         'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1600&q=80&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1545389336-cf090694435e?w=1600&q=80&auto=format&fit=crop'
@@ -513,7 +523,7 @@ async function run() {
       reviews: 456,
       ticket_types: [
         { 
-          name: 'Shared Room Package', 
+          name:  'Shared Room Package', 
           description: '2-4 people per room', 
           price: 450, 
           available: 30, 
@@ -541,12 +551,13 @@ async function run() {
     },
     {
       title: 'Gaming Convention 2026',
-      subtitle:  'The ultimate gathering for gamers',
+      subtitle: 'The ultimate gathering for gamers',
       category:  'Gaming',
       location:  'Mega Convention Center',
       address: '700 Expo Boulevard, Convention District',
+      city: 'Las Vegas',
       date: new Date('2026-11-15T10:00:00Z'),
-      description: 'The biggest gaming event of the year is back!  Experience 3 days of game reveals, esports tournaments, cosplay competitions, developer panels, hands-on demos, and exclusive merchandise.\n\nMeet your favorite streamers, compete in tournaments, and be among the first to play unreleased games.',
+      description: 'The biggest gaming event of the year is back! Experience 3 days of game reveals, esports tournaments, cosplay competitions, developer panels, hands-on demos, and exclusive merchandise.\n\nMeet your favorite streamers, compete in tournaments, and be among the first to play unreleased games.',
       images: [
         'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=1600&q=80&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=80&auto=format&fit=crop',
@@ -597,6 +608,7 @@ async function run() {
       category: 'Automotive',
       location: 'Grand Exhibition Hall',
       address: '999 Collector\'s Drive, Heritage Park',
+      city: 'Detroit',
       date: new Date('2026-08-28T09:00:00Z'),
       description: 'Join enthusiasts and collectors for the region\'s premier classic car event. Admire over 200 vintage and classic automobiles, attend the live auction, and enjoy expert restoration demonstrations.\n\nFrom muscle cars to European classics, this event showcases automotive history at its finest.',
       images: [
@@ -617,7 +629,7 @@ async function run() {
       ticket_types: [
         { 
           name:  'General Admission', 
-          description: 'Show access', 
+          description:  'Show access', 
           price: 25, 
           available: 500, 
           total: 2000,
@@ -625,7 +637,7 @@ async function run() {
         },
         { 
           name: 'Enthusiast Pass', 
-          description:  'Show + auction access', 
+          description: 'Show + auction access', 
           price: 50, 
           available: 200, 
           total: 500,
@@ -647,6 +659,7 @@ async function run() {
       category: 'Holiday Event',
       location: 'Grand Ballroom Hotel',
       address: '555 Celebration Avenue, Downtown',
+      city: 'Nashville',
       date: new Date('2026-12-31T21:00:00Z'),
       description: 'Celebrate the arrival of 2027 at the city\'s most elegant New Year\'s Eve party! Enjoy a night of dancing, live entertainment, gourmet dinner, premium open bar, and a spectacular midnight countdown.\n\nBlack tie optional. Must be 21+.',
       images: [
@@ -678,7 +691,7 @@ async function run() {
           name: 'Couple\'s Package', 
           description: 'Two tickets', 
           price:  350, 
-          available:  80, 
+          available: 80, 
           total: 200,
           originalPrice: 400,
           features: ['2 tickets', 'All amenities', 'Couples photo', 'Champagne bottle']
@@ -695,10 +708,11 @@ async function run() {
     },
     {
       title: 'Photography Workshop: Landscape Mastery',
-      subtitle:  'Learn from award-winning photographers',
+      subtitle: 'Learn from award-winning photographers',
       category:  'Workshop',
       location: 'Nature Photography Center & Mountain Park',
       address: '1500 Scenic Vista Road, Mountain View',
+      city: 'Phoenix',
       date: new Date('2026-10-05T08:00:00Z'),
       description: 'Elevate your landscape photography skills in this intensive 2-day workshop. Learn advanced techniques in composition, lighting, long exposure, and post-processing from award-winning photographers.\n\nIncludes hands-on shooting in stunning locations, personalized feedback, and post-processing sessions.  All skill levels welcome but basic camera knowledge required.',
       images: [
@@ -742,6 +756,7 @@ async function run() {
       category: 'Family & Kids',
       location: 'Children\'s Science Museum',
       address: '200 Discovery Lane, Education Quarter',
+      city: 'San Diego',
       date: new Date('2026-07-18T10:00:00Z'),
       description: 'An exciting day of hands-on science experiments, interactive demonstrations, and educational fun for kids ages 5-14!  Watch amazing science shows, participate in experiments, meet scientists, and explore STEM activities.\n\nPerfect for curious minds and families who love learning together! ',
       images: [
@@ -795,7 +810,7 @@ async function run() {
   console.log('✅ Inserted count:', inserted.length);
   console.log('\n📋 Event List:');
   inserted.forEach((doc, idx) => {
-    console.log(`${idx + 1}) ${doc._id} | ${doc.category} | ${doc.title}`);
+    console.log(`${idx + 1}) ${doc._id} | ${doc.city} | ${doc.category} | ${doc.title}`);
   });
 
   await mongoose.disconnect();

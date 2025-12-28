@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { 
   MapPin, Calendar, Clock, Users, Search, ChevronLeft, ChevronRight,
   X, Star, TrendingUp, Heart, Grid, List, SlidersHorizontal,
-  Sparkles, Zap, Tag, DollarSign, ArrowUpDown
+  Sparkles, Zap, Tag, DollarSign, ArrowUpDown, Building2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +11,7 @@ import { fetchEvents } from "./api";
 const EventListingPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("All");
+  const [selectedCity, setSelectedCity] = useState("All");
   const [selectedDate, setSelectedDate] = useState("All");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [priceRange, setPriceRange] = useState("All");
@@ -44,7 +44,7 @@ const EventListingPage = () => {
       
       return { date: displayDate, time: displayTime };
     } catch (err) {
-      return { date:  "Invalid Date", time: "" };
+      return { date:   "Invalid Date", time: "" };
     }
   };
 
@@ -116,7 +116,7 @@ const EventListingPage = () => {
 
   const clearFilters = () => {
     setSearchQuery("");
-    setSelectedLocation("All");
+    setSelectedCity("All");
     setSelectedDate("All");
     setSelectedCategory("All");
     setPriceRange("All");
@@ -137,7 +137,7 @@ const EventListingPage = () => {
       
       try {
         const data = await fetchEvents();
-        const eventsArray = Array.isArray(data) ? data : (data. events || []);
+        const eventsArray = Array.isArray(data) ? data : (data.events || []);
         setEvents(eventsArray);
       } catch (err) {
         console.error("Error fetching events:", err);
@@ -152,13 +152,13 @@ const EventListingPage = () => {
 
   // ===== MEMOIZED VALUES =====
 
-  const locations = useMemo(
-    () => ["All", ... Array.from(new Set(events. map((e) => e.location).filter(Boolean)))],
+  const cities = useMemo(
+    () => ["All", ... Array.from(new Set(events. map((e) => e.city).filter(Boolean)))].sort(),
     [events]
   );
 
   const categories = useMemo(
-    () => ["All", ...Array. from(new Set(events.map((e) => e.category).filter(Boolean)))],
+    () => ["All", ...Array.from(new Set(events.map((e) => e.category).filter(Boolean)))],
     [events]
   );
 
@@ -185,13 +185,13 @@ const EventListingPage = () => {
       const matchesSearch = event.title
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase());
-      const matchesLocation =
-        selectedLocation === "All" || event.location === selectedLocation;
+      const matchesCity =
+        selectedCity === "All" || event.city === selectedCity;
       const matchesDate = selectedDate === "All" || event.date === selectedDate;
       const matchesCategory = selectedCategory === "All" || event.category === selectedCategory;
       const matchesPrice = matchesPriceRange(event, priceRange);
       
-      return matchesSearch && matchesLocation && matchesDate && matchesCategory && matchesPrice;
+      return matchesSearch && matchesCity && matchesDate && matchesCategory && matchesPrice;
     });
 
     filtered. sort((a, b) => {
@@ -212,18 +212,18 @@ const EventListingPage = () => {
     });
 
     return filtered;
-  }, [events, searchQuery, selectedLocation, selectedDate, selectedCategory, priceRange, sortBy]);
+  }, [events, searchQuery, selectedCity, selectedDate, selectedCategory, priceRange, sortBy]);
 
   const activeFiltersCount = [
     searchQuery,
-    selectedLocation !== "All",
+    selectedCity !== "All",
     selectedDate !== "All",
     selectedCategory !== "All",
     priceRange !== "All"
   ].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-20 px-4 sm:px-6 lg: px-8">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
@@ -294,7 +294,7 @@ const EventListingPage = () => {
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded-lg transition-all ${
                     viewMode === "grid"
-                      ?  "bg-white shadow-sm text-purple-600"
+                      ? "bg-white shadow-sm text-purple-600"
                       : "text-gray-600 hover:text-gray-800"
                   }`}
                   title="Grid View"
@@ -321,7 +321,7 @@ const EventListingPage = () => {
             {showFilters && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height:  "auto" }}
+                animate={{ opacity:  1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
@@ -330,8 +330,8 @@ const EventListingPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
                     {/* Category Filter */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1. 5">
-                        <Tag className="w-3. 5 h-3.5" />
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                        <Tag className="w-3.5 h-3.5" />
                         Category
                       </label>
                       <select
@@ -347,20 +347,20 @@ const EventListingPage = () => {
                       </select>
                     </div>
 
-                    {/* Location Filter */}
+                    {/* City Filter */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5" />
-                        Location
+                        <Building2 className="w-3.5 h-3.5" />
+                        City
                       </label>
                       <select
-                        value={selectedLocation}
-                        onChange={(e) => setSelectedLocation(e.target.value)}
+                        value={selectedCity}
+                        onChange={(e) => setSelectedCity(e.target.value)}
                         className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none text-sm"
                       >
-                        {locations.map((loc) => (
-                          <option key={loc} value={loc}>
-                            {loc}
+                        {cities.map((city) => (
+                          <option key={city} value={city}>
+                            {city}
                           </option>
                         ))}
                       </select>
@@ -374,8 +374,8 @@ const EventListingPage = () => {
                       </label>
                       <select
                         value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none text-sm"
+                        onChange={(e) => setSelectedDate(e. target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus: ring-2 focus:ring-purple-500 outline-none text-sm"
                       >
                         {dates.map((date) => (
                           <option key={date.value} value={date.value}>
@@ -394,11 +394,11 @@ const EventListingPage = () => {
                       <select
                         value={priceRange}
                         onChange={(e) => setPriceRange(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none text-sm"
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus: ring-purple-500 outline-none text-sm"
                       >
-                        {priceRanges. map((range) => (
-                          <option key={range.value} value={range.value}>
-                            {range.label}
+                        {priceRanges.map((range) => (
+                          <option key={range.value} value={range. value}>
+                            {range. label}
                           </option>
                         ))}
                       </select>
@@ -484,7 +484,7 @@ const EventListingPage = () => {
                     navigate={navigate}
                   />
                 ))}
-              </motion.div>
+              </motion. div>
             ) : (
               <motion.div
                 key="list"
@@ -530,7 +530,7 @@ const EventListingPage = () => {
   );
 };
 
-// Event Card Component (Grid View) - More Compact
+// Event Card Component (Grid View) - Shows both City and Location
 const EventCard = ({
   event,
   index,
@@ -555,9 +555,9 @@ const EventCard = ({
   const isLiked = likedEvents.includes(event._id);
 
   return (
-    <motion.div
+    <motion. div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity:  1, y: 0 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}
       className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer transform hover:-translate-y-1"
       onClick={() => navigate(`/events/${event._id}`)}
@@ -602,7 +602,7 @@ const EventCard = ({
                 <div
                   key={idx}
                   className={`h-1 rounded-full transition-all ${
-                    idx === currentIndex ?  "w-4 bg-white" : "w-1 bg-white/50"
+                    idx === currentIndex ? "w-4 bg-white" : "w-1 bg-white/50"
                   }`}
                 />
               ))}
@@ -656,17 +656,27 @@ const EventCard = ({
         {/* Event Info */}
         <div className="space-y-1. 5 mb-3 text-xs">
           <div className="flex items-center gap-1.5 text-gray-600">
-            <Calendar className="w-3.5 h-3.5 text-blue-500" />
+            <Calendar className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
             <span>{displayDate}</span>
-            <Clock className="w-3.5 h-3.5 text-green-500 ml-2" />
+            <Clock className="w-3.5 h-3.5 text-green-500 ml-2 flex-shrink-0" />
             <span>{displayTime}</span>
           </div>
-          <div className="flex items-center justify-between">
+          
+          {/* City */}
+          {event.city && (
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-purple-500" />
+              <Building2 className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
+              <span className="text-gray-700 font-medium truncate">{event.city}</span>
+            </div>
+          )}
+          
+          {/* Location */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <MapPin className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
               <span className="text-gray-600 truncate">{event.location}</span>
             </div>
-            <span className={`${seatInfo.color} font-semibold text-xs`}>
+            <span className={`${seatInfo.color} font-semibold text-xs whitespace-nowrap`}>
               {seatInfo.text. split(' ')[0]}
             </span>
           </div>
@@ -717,7 +727,7 @@ const EventCard = ({
   );
 };
 
-// Event List Item Component (List View) - More Compact
+// Event List Item Component (List View) - Shows both City and Location
 const EventListItem = ({
   event,
   index,
@@ -732,7 +742,7 @@ const EventListItem = ({
   const seatInfo = getSeatStatus(event);
   const images = event.images && event.images.length > 0 
     ? event.images 
-    : ["https://via.placeholder.com/400x300?text=Event+Image"];
+    :  ["https://via.placeholder.com/400x300?text=Event+Image"];
   const { date: displayDate, time: displayTime } = formatDateTime(event. date);
   const minPrice = getMinPrice(event);
   const isLiked = likedEvents.includes(event._id);
@@ -740,8 +750,8 @@ const EventListItem = ({
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay:  index * 0.03 }}
+      animate={{ opacity: 1, x:  0 }}
+      transition={{ delay: index * 0.03 }}
       className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100 cursor-pointer"
       onClick={() => navigate(`/events/${event._id}`)}
     >
@@ -754,7 +764,7 @@ const EventListItem = ({
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = "https://via.placeholder.com/400x300? text=Event+Image";
+              e. target.src = "https://via.placeholder.com/400x300?text=Event+Image";
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
@@ -800,21 +810,27 @@ const EventListItem = ({
               <p className="text-sm text-gray-600 mb-3">{event.subtitle}</p>
             )}
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3 text-xs">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-3 text-xs">
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-blue-500" />
+                <Calendar className="w-4 h-4 text-blue-500 flex-shrink-0" />
                 <span className="text-gray-700">{displayDate}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-green-500" />
+                <Clock className="w-4 h-4 text-green-500 flex-shrink-0" />
                 <span className="text-gray-700">{displayTime}</span>
               </div>
+              {event.city && (
+                <div className="flex items-center gap-1.5">
+                  <Building2 className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                  <span className="text-gray-700 font-medium">{event.city}</span>
+                </div>
+              )}
               <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-purple-500" />
+                <MapPin className="w-4 h-4 text-purple-500 flex-shrink-0" />
                 <span className="text-gray-700">{event.location || "TBA"}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Users className={`w-4 h-4 ${seatInfo.color}`} />
+                <Users className={`w-4 h-4 ${seatInfo.color} flex-shrink-0`} />
                 <span className={`${seatInfo.color} font-semibold`}>{seatInfo.text}</span>
               </div>
             </div>
@@ -826,7 +842,7 @@ const EventListItem = ({
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`w-3.5 h-3.5 ${
+                      className={`w-3. 5 h-3.5 ${
                         i < Math. floor(event.rating)
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-300"
@@ -873,7 +889,7 @@ style.textContent = `
     0%, 100% { transform: translate(0, 0) scale(1); }
     25% { transform: translate(20px, -50px) scale(1.1); }
     50% { transform: translate(-20px, 20px) scale(0.9); }
-    75% { transform: translate(50px, 50px) scale(1.05); }
+    75% { transform:  translate(50px, 50px) scale(1.05); }
   }
   
   . animate-blob {
@@ -881,11 +897,11 @@ style.textContent = `
   }
   
   . animation-delay-2000 {
-    animation-delay:  2s;
+    animation-delay: 2s;
   }
   
   .animation-delay-4000 {
-    animation-delay: 4s;
+    animation-delay:  4s;
   }
 `;
 document.head.appendChild(style);
