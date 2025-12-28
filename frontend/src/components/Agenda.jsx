@@ -250,7 +250,7 @@ export default function EventsScheduleSection() {
                     <div>
                       <div className="text-gray-400 text-xs">From</div>
                       <div className="text-xl font-black text-yellow-400">
-                        {event.price === 0 ? 'Free' : `₹${event.price}`}
+                        {event.price === 0 ? 'Free' : `$${event.price}`}
                       </div>
                     </div>
                     <button
