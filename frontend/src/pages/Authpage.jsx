@@ -6,12 +6,19 @@ import {
 } from 'lucide-react';
 import { login, register } from './api';
 
-// Get Google Client ID
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 
-                         '1017010942788-b55b6i9o8s1lmofbm4b0t1g42tu0kf0i.apps.googleusercontent.com';
+// Get Google Client ID from environment
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 // Get API URL
-const API_URL = import. meta.env.VITE_API_URL || 'http://localhost:4000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+
+// Validate configuration
+if (!GOOGLE_CLIENT_ID) {
+  console.error('❌ VITE_GOOGLE_CLIENT_ID is not set in environment variables');
+} else {
+  console.log('🔑 Frontend Google Client ID configured:', GOOGLE_CLIENT_ID. substring(0, 20) + '...');
+}
+console.log('🌐 API URL:', API_URL);
 
 // Add animations
 if (typeof document !== 'undefined') {
@@ -52,7 +59,7 @@ if (typeof document !== 'undefined') {
       .animate-scale-in { animation: scale-in 0.3s ease-out; }
       .bg-size-200 { background-size:  200% 100%; }
       .bg-pos-0 { background-position: 0% 0%; }
-      .bg-pos-100 { background-position:  100% 0%; transition: background-position 0.5s ease; }
+      . bg-pos-100 { background-position: 100% 0%; transition: background-position 0.5s ease; }
     `;
     document.head.appendChild(style);
   }
@@ -76,7 +83,8 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex items-center justify-center min-h-[44px] text-gray-500 text-sm">
+        <div className="flex items-center justify-center min-h-[44px] text-amber-600 text-sm bg-amber-50 rounded-xl p-3">
+          <AlertCircle className="w-4 h-4 mr-2" />
           Google Sign-In temporarily unavailable
         </div>
       );
@@ -85,47 +93,64 @@ class ErrorBoundary extends Component {
   }
 }
 
-// Google Button Component - Isolated
+// Google Button Component - Improved with better error handling
 function GoogleSignInButton({ onSuccess, onError }) {
   const buttonRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasRendered, setHasRendered] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId;
+    let checkInterval;
 
     const initGoogle = () => {
-      if (! window.google || !buttonRef.current || hasRendered) return;
+      if (!window. google || !buttonRef.current || hasRendered) return;
+
+      if (! GOOGLE_CLIENT_ID) {
+        const errorMsg = 'Google Sign-In not configured';
+        console.error('❌', errorMsg);
+        setError(errorMsg);
+        setIsLoading(false);
+        onError?.(errorMsg);
+        return;
+      }
 
       try {
-        window.google.accounts.id.initialize({
+        console.log('🔧 Initializing Google Sign-In...');
+        
+        window. google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
           callback: onSuccess,
+          auto_select:  false,
+          cancel_on_tap_outside: true,
         });
 
         // Clear and render
-        if (buttonRef.current) {
+        if (buttonRef.current && isMounted) {
           buttonRef.current.innerHTML = '';
           window.google.accounts.id.renderButton(buttonRef.current, {
             theme: 'outline',
             size: 'large',
             type: 'standard',
             text: 'signin_with',
-            shape: 'rectangular',
+            shape:  'rectangular',
             logo_alignment: 'left',
             width: 350,
           });
           
-          if (isMounted) {
-            setHasRendered(true);
-            setIsLoading(false);
-          }
+          setHasRendered(true);
+          setIsLoading(false);
+          console.log('✅ Google button rendered successfully');
         }
       } catch (error) {
-        console.error('Google button render error:', error);
+        console.error('❌ Google button render error:', error);
         if (isMounted) {
+          const errorMsg = 'Failed to load Google Sign-In';
+          setError(errorMsg);
           setIsLoading(false);
-          onError?. ('Failed to load Google Sign-In');
+          onError?.(errorMsg);
         }
       }
     };
@@ -133,37 +158,49 @@ function GoogleSignInButton({ onSuccess, onError }) {
     if (window.google) {
       initGoogle();
     } else {
-      const checkGoogle = setInterval(() => {
-        if (window.google) {
-          clearInterval(checkGoogle);
+      console.log('⏳ Waiting for Google script to load...');
+      
+      checkInterval = setInterval(() => {
+        if (window. google) {
+          clearInterval(checkInterval);
           initGoogle();
         }
       }, 100);
 
-      setTimeout(() => {
-        clearInterval(checkGoogle);
-        if (isMounted && !hasRendered) {
+      timeoutId = setTimeout(() => {
+        clearInterval(checkInterval);
+        if (isMounted && ! hasRendered) {
+          console.warn('⚠️ Google script failed to load within 10 seconds');
+          const errorMsg = 'Google Sign-In is taking too long to load';
+          setError(errorMsg);
           setIsLoading(false);
+          onError?.(errorMsg);
         }
-      }, 5000);
-
-      return () => {
-        clearInterval(checkGoogle);
-        isMounted = false;
-      };
+      }, 10000); // 10 second timeout
     }
 
     return () => {
+      clearInterval(checkInterval);
+      clearTimeout(timeoutId);
       isMounted = false;
     };
   }, [onSuccess, onError, hasRendered]);
 
+  if (error) {
+    return (
+      <div className="w-full flex justify-center items-center text-amber-600 text-sm p-3 bg-amber-50 rounded-xl border border-amber-200">
+        <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+        <span>{error}</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full flex justify-center" style={{ minHeight: '44px' }}>
+    <div className="w-full flex justify-center" style={{ minHeight:  '44px' }}>
       {isLoading && ! hasRendered && (
         <div className="flex items-center justify-center text-gray-500 text-sm">
           <Loader className="w-4 h-4 animate-spin mr-2" />
-          Loading Google Sign-In...
+          Loading Google Sign-In... 
         </div>
       )}
       <div ref={buttonRef} className="w-full max-w-[350px]" />
@@ -198,6 +235,7 @@ function TicketEaseAuth() {
   const saveAuth = (token, user) => {
     localStorage.setItem('authToken', token);
     localStorage.setItem('authUser', JSON.stringify(user));
+    console.log('✅ Auth data saved to localStorage');
   };
 
   // Load Google script once
@@ -206,29 +244,37 @@ function TicketEaseAuth() {
 
     const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
     if (existingScript) {
+      console.log('ℹ️ Google script already exists');
       scriptLoaded.current = true;
       return;
     }
 
+    console.log('📥 Loading Google Sign-In script...');
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
     script.onload = () => {
       scriptLoaded.current = true;
-      console.log('✅ Google script loaded');
+      console.log('✅ Google script loaded successfully');
     };
     script.onerror = () => {
       console.error('❌ Failed to load Google script');
     };
 
     document.body.appendChild(script);
+
+    return () => {
+      // Cleanup if needed
+    };
   }, []);
 
+  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated()) {
+      console.log('ℹ️ User already authenticated, redirecting.. .');
       const dest = redirectTo || '/events';
-      navigate(dest, { state: payload || null, replace: true });
+      navigate(dest, { state:  payload || null, replace: true });
     }
   }, [navigate, redirectTo, payload]);
 
@@ -237,34 +283,46 @@ function TicketEaseAuth() {
     setError('');
     setSuccess('');
 
+    console.log('🔐 Google login initiated');
+    console.log('🔑 Credential received:', !!response.credential);
+
     try {
       const res = await fetch(`${API_URL}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential: response. credential }),
+        body: JSON.stringify({ credential: response.credential }),
       });
 
       const data = await res.json();
 
-      if (res.ok && data.token && data.user) {
-        saveAuth(data.token, data. user);
-        setSuccess('Google login successful!  Redirecting.. .');
+      console.log('📥 Server response:', {
+        status: res.status,
+        ok: res.ok,
+        hasToken: !!data.token,
+        hasUser: !!data.user
+      });
+
+      if (res.ok && data.token && data. user) {
+        saveAuth(data.token, data.user);
+        setSuccess('Google login successful!  Redirecting...');
         
         setTimeout(() => {
-          navigate(redirectTo || '/events', { state:  payload || null });
+          navigate(redirectTo || '/events', { state: payload || null });
         }, 1000);
       } else {
-        setError(data.error || 'Google authentication failed');
+        console.error('❌ Auth failed:', data);
+        setError(data.error || data.message || 'Google authentication failed');
       }
     } catch (err) {
-      console.error('Google auth error:', err);
-      setError('Failed to authenticate with Google');
+      console.error('❌ Google auth error:', err);
+      setError('Failed to authenticate with Google. Please try again.');
     } finally {
       setLoading(false);
     }
   }, [navigate, redirectTo, payload]);
 
   const handleGoogleError = useCallback((errorMsg) => {
+    console.error('❌ Google Sign-In error:', errorMsg);
     setError(errorMsg);
   }, []);
 
@@ -304,13 +362,22 @@ function TicketEaseAuth() {
     setError('');
     setSuccess('');
 
+    console.log(`🔐 ${isLogin ? 'Login' : 'Register'} attempt for: `, formData.email);
+
     try {
       const response = isLogin 
         ? await login({ email: formData.email, password: formData.password })
-        : await register({ name: formData.name, email: formData. email, phone: formData.phone, password: formData.password });
+        : await register({ 
+            name: formData.name, 
+            email: formData. email, 
+            phone: formData.phone, 
+            password: formData. password 
+          });
+
+      console.log('📥 Auth response:', { hasToken: !!response.token, hasUser: !!response.user });
 
       if (response.token && response.user) {
-        saveAuth(response.token, response. user);
+        saveAuth(response.token, response.user);
         setSuccess(isLogin ? 'Login successful!  Redirecting...' : 'Account created!  Redirecting...');
         
         setTimeout(() => {
@@ -320,6 +387,7 @@ function TicketEaseAuth() {
         setError('Authentication failed');
       }
     } catch (err) {
+      console.error('❌ Auth error:', err);
       setError(err.body?.error || err.message || (isLogin ? 'Invalid email or password' : 'Registration failed'));
     } finally {
       setLoading(false);
@@ -327,7 +395,7 @@ function TicketEaseAuth() {
   };
 
   const handleChange = (e) => {
-    setFormData((p) => ({ ...p, [e.target. name]: e.target.value }));
+    setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
     if (error) setError('');
     if (success) setSuccess('');
   };
@@ -349,8 +417,8 @@ function TicketEaseAuth() {
     if (password.length >= 10) strength++;
     if (/[a-z]/.test(password) && /[A-Z]/. test(password)) strength++;
     if (/\d/.test(password)) strength++;
-    if (/[^a-zA-Z\d]/. test(password)) strength++;
-    if (strength <= 2) return { strength, label: 'Weak', color: 'bg-red-500' };
+    if (/[^a-zA-Z\d]/.test(password)) strength++;
+    if (strength <= 2) return { strength, label: 'Weak', color:  'bg-red-500' };
     if (strength <= 3) return { strength, label: 'Fair', color: 'bg-yellow-500' };
     if (strength <= 4) return { strength, label: 'Good', color: 'bg-blue-500' };
     return { strength, label: 'Strong', color: 'bg-green-500' };
@@ -370,7 +438,16 @@ function TicketEaseAuth() {
       {/* Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
-          <div key={i} className="absolute animate-float" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 5}s`, animationDuration: `${5 + Math.random() * 10}s` }}>
+          <div 
+            key={i} 
+            className="absolute animate-float" 
+            style={{ 
+              left: `${Math.random() * 100}%`, 
+              top: `${Math.random() * 100}%`, 
+              animationDelay: `${Math.random() * 5}s`, 
+              animationDuration:  `${5 + Math.random() * 10}s` 
+            }}
+          >
             <Sparkles className="w-4 h-4 text-white opacity-20" />
           </div>
         ))}
@@ -399,90 +476,192 @@ function TicketEaseAuth() {
             </div>
           </div>
 
-          {/* Form - keeping your existing form fields exactly as they are */}
+          {/* Form */}
           <form className="p-8" onSubmit={handleSubmit}>
             {/* Toggle Pills */}
             <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
-              <button type="button" onClick={() => ! loading && ! isLogin && toggleMode()} disabled={loading} className={`flex-1 py-2. 5 rounded-lg font-semibold text-sm transition-all duration-300 ${isLogin ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' : 'text-gray-600 hover:text-gray-800'}`}>
+              <button 
+                type="button" 
+                onClick={() => ! loading && ! isLogin && toggleMode()} 
+                disabled={loading} 
+                className={`flex-1 py-2. 5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  isLogin 
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
                 Login
               </button>
-              <button type="button" onClick={() => !loading && isLogin && toggleMode()} disabled={loading} className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${! isLogin ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' :  'text-gray-600 hover:text-gray-800'}`}>
+              <button 
+                type="button" 
+                onClick={() => !loading && isLogin && toggleMode()} 
+                disabled={loading} 
+                className={`flex-1 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  !isLogin 
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
                 Sign Up
               </button>
             </div>
 
             <div className="space-y-4">
-              {/* Keep all your existing form fields here - Name, Email, Phone, Password, etc. */}
-              {/* I'm keeping them exactly as you had them */}
-              
-              {! isLogin && (
+              {/* Name Field (Sign Up only) */}
+              {!isLogin && (
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name <span className="text-red-500">*</span></label>
-                  <div className={`relative ${focusedField === 'name' ? 'transform scale-[1.02]' : ''}`}>
-                    <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${focusedField === 'name' ? 'text-purple-600' : 'text-gray-400'}`} />
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} onFocus={() => setFocusedField('name')} onBlur={() => setFocusedField('')} className="w-full pl-11 pr-4 py-3. 5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 bg-gray-50 focus:bg-white" placeholder="John Doe" required={! isLogin} />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <div className={`relative transition-transform duration-200 ${focusedField === 'name' ? 'transform scale-[1.02]' : ''}`}>
+                    <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'name' ? 'text-purple-600' :  'text-gray-400'}`} />
+                    <input 
+                      type="text" 
+                      name="name" 
+                      value={formData. name} 
+                      onChange={handleChange} 
+                      onFocus={() => setFocusedField('name')} 
+                      onBlur={() => setFocusedField('')} 
+                      className="w-full pl-11 pr-4 py-3. 5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 bg-gray-50 focus:bg-white" 
+                      placeholder="John Doe" 
+                      required={! isLogin} 
+                    />
                   </div>
                 </div>
               )}
 
+              {/* Email Field */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address <span className="text-red-500">*</span></label>
-                <div className={`relative ${focusedField === 'email' ? 'transform scale-[1.02]' : ''}`}>
-                  <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${focusedField === 'email' ? 'text-purple-600' : 'text-gray-400'}`} />
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField('')} className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 bg-gray-50 focus:bg-white" placeholder="you@example.com" required />
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <div className={`relative transition-transform duration-200 ${focusedField === 'email' ? 'transform scale-[1.02]' : ''}`}>
+                  <Mail className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'email' ? 'text-purple-600' : 'text-gray-400'}`} />
+                  <input 
+                    type="email" 
+                    name="email" 
+                    value={formData.email} 
+                    onChange={handleChange} 
+                    onFocus={() => setFocusedField('email')} 
+                    onBlur={() => setFocusedField('')} 
+                    className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus:ring-4 focus: ring-purple-500/20 focus:border-purple-500 bg-gray-50 focus: bg-white" 
+                    placeholder="you@example.com" 
+                    required 
+                  />
                 </div>
               </div>
 
-              {! isLogin && (
+              {/* Phone Field (Sign Up only) */}
+              {!isLogin && (
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number <span className="text-gray-400 text-xs">(Optional)</span></label>
-                  <div className={`relative ${focusedField === 'phone' ? 'transform scale-[1.02]' : ''}`}>
-                    <Phone className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${focusedField === 'phone' ? 'text-purple-600' : 'text-gray-400'}`} />
-                    <input type="tel" name="phone" value={formData.phone} onChange={handleChange} onFocus={() => setFocusedField('phone')} onBlur={() => setFocusedField('')} className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus: ring-4 focus:ring-purple-500/20 focus: border-purple-500 bg-gray-50 focus:bg-white" placeholder="+1 (555) 000-0000" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number <span className="text-gray-400 text-xs">(Optional)</span>
+                  </label>
+                  <div className={`relative transition-transform duration-200 ${focusedField === 'phone' ? 'transform scale-[1.02]' : ''}`}>
+                    <Phone className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'phone' ? 'text-purple-600' : 'text-gray-400'}`} />
+                    <input 
+                      type="tel" 
+                      name="phone" 
+                      value={formData.phone} 
+                      onChange={handleChange} 
+                      onFocus={() => setFocusedField('phone')} 
+                      onBlur={() => setFocusedField('')} 
+                      className="w-full pl-11 pr-4 py-3.5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 bg-gray-50 focus:bg-white" 
+                      placeholder="+1 (555) 000-0000" 
+                    />
                   </div>
                 </div>
               )}
 
+              {/* Password Field */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Password <span className="text-red-500">*</span></label>
-                <div className={`relative ${focusedField === 'password' ? 'transform scale-[1.02]' : ''}`}>
-                  <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${focusedField === 'password' ? 'text-purple-600' : 'text-gray-400'}`} />
-                  <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} onFocus={() => setFocusedField('password')} onBlur={() => setFocusedField('')} className="w-full pl-11 pr-12 py-3.5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus: ring-4 focus:ring-purple-500/20 focus: border-purple-500 bg-gray-50 focus:bg-white" placeholder="••••••••" required />
-                  <button type="button" onClick={() => setShowPassword((s) => !s)} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-all">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <div className={`relative transition-transform duration-200 ${focusedField === 'password' ? 'transform scale-[1.02]' : ''}`}>
+                  <Lock className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${focusedField === 'password' ? 'text-purple-600' : 'text-gray-400'}`} />
+                  <input 
+                    type={showPassword ? 'text' : 'password'} 
+                    name="password" 
+                    value={formData.password} 
+                    onChange={handleChange} 
+                    onFocus={() => setFocusedField('password')} 
+                    onBlur={() => setFocusedField('')} 
+                    className="w-full pl-11 pr-12 py-3.5 border-2 border-gray-200 rounded-xl outline-none transition-all duration-300 focus: ring-4 focus:ring-purple-500/20 focus: border-purple-500 bg-gray-50 focus:bg-white" 
+                    placeholder="••••••••" 
+                    required 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword((s) => !s)} 
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-all"
+                  >
                     {showPassword ? <EyeOff className="w-5 h-5" /> :  <Eye className="w-5 h-5" />}
                   </button>
                 </div>
                 
-                {! isLogin && formData.password && passwordStrength && (
+                {/* Password Strength Indicator (Sign Up only) */}
+                {!isLogin && formData.password && passwordStrength && (
                   <div className="mt-2">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-gray-600">Password Strength: </span>
-                      <span className={`text-xs font-bold ${passwordStrength.label === 'Weak' ? 'text-red-500' :  passwordStrength.label === 'Fair' ? 'text-yellow-500' : passwordStrength.label === 'Good' ? 'text-blue-500' : 'text-green-500'}`}>{passwordStrength.label}</span>
+                      <span className="text-xs font-medium text-gray-600">Password Strength:</span>
+                      <span className={`text-xs font-bold ${
+                        passwordStrength.label === 'Weak' ? 'text-red-500' :  
+                        passwordStrength. label === 'Fair' ? 'text-yellow-500' :  
+                        passwordStrength.label === 'Good' ? 'text-blue-500' : 
+                        'text-green-500'
+                      }`}>
+                        {passwordStrength.label}
+                      </span>
                     </div>
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className={`h-full ${passwordStrength.color} transition-all duration-500`} style={{ width: `${(passwordStrength.strength / 5) * 100}%` }} />
+                      <div 
+                        className={`h-full ${passwordStrength.color} transition-all duration-500`} 
+                        style={{ width:  `${(passwordStrength.strength / 5) * 100}%` }} 
+                      />
                     </div>
                   </div>
                 )}
               </div>
 
+              {/* Forgot Password (Login only) */}
               {isLogin && (
                 <div className="flex justify-end">
-                  <button type="button" className="text-sm font-semibold text-purple-600 hover:text-purple-700 hover:underline" onClick={() => alert('Password reset coming soon!')}>
+                  <button 
+                    type="button" 
+                    className="text-sm font-semibold text-purple-600 hover:text-purple-700 hover:underline transition-colors" 
+                    onClick={() => alert('Password reset coming soon!')}
+                  >
                     Forgot Password?
                   </button>
                 </div>
               )}
 
-              {! isLogin && (
+              {/* Terms Checkbox (Sign Up only) */}
+              {!isLogin && (
                 <div className="flex items-start bg-purple-50 p-4 rounded-xl border border-purple-100">
-                  <input type="checkbox" id="terms" className="mt-1 mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded cursor-pointer" checked={termsChecked} onChange={(e) => setTermsChecked(e.target.checked)} required={!isLogin} />
+                  <input 
+                    type="checkbox" 
+                    id="terms" 
+                    className="mt-1 mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded cursor-pointer" 
+                    checked={termsChecked} 
+                    onChange={(e) => setTermsChecked(e.target.checked)} 
+                    required={!isLogin} 
+                  />
                   <label htmlFor="terms" className="text-sm text-gray-700 cursor-pointer">
-                    I agree to the <a href="/terms" className="font-semibold text-purple-600 hover:underline" onClick={(e) => e.preventDefault()}>Terms of Service</a> and <a href="/privacy" className="font-semibold text-purple-600 hover:underline" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
+                    I agree to the{' '}
+                    <a href="/terms" className="font-semibold text-purple-600 hover:underline" onClick={(e) => e.preventDefault()}>
+                      Terms of Service
+                    </a>
+                    {' '}and{' '}
+                    <a href="/privacy" className="font-semibold text-purple-600 hover: underline" onClick={(e) => e.preventDefault()}>
+                      Privacy Policy
+                    </a>
                   </label>
                 </div>
               )}
 
+              {/* Success Message */}
               {success && (
                 <div className="flex items-center gap-3 p-4 bg-green-50 border-2 border-green-200 rounded-xl animate-slide-down">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 animate-scale-in" />
@@ -490,6 +669,7 @@ function TicketEaseAuth() {
                 </div>
               )}
 
+              {/* Error Message */}
               {error && (
                 <div className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-200 rounded-xl animate-shake">
                   <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -497,29 +677,56 @@ function TicketEaseAuth() {
                 </div>
               )}
 
-              <button type="submit" disabled={loading || !!success} className={`w-full text-white py-4 rounded-xl font-bold transition-all duration-300 shadow-lg flex items-center justify-center gap-2 group ${loading || success ? 'opacity-70 cursor-not-allowed' :  'hover:shadow-2xl hover:shadow-purple-500/50 transform hover:scale-[1.02]'} bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600`}>
+              {/* Submit Button */}
+              <button 
+                type="submit" 
+                disabled={loading || !!success} 
+                className={`w-full text-white py-4 rounded-xl font-bold transition-all duration-300 shadow-lg flex items-center justify-center gap-2 group ${
+                  loading || success 
+                    ? 'opacity-70 cursor-not-allowed' 
+                    : 'hover: shadow-2xl hover:shadow-purple-500/50 transform hover: scale-[1.02]'
+                } bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600`}
+              >
                 {loading ? (
-                  <><Loader className="w-5 h-5 animate-spin" />{isLogin ? 'Logging in...' : 'Creating account...'}</>
+                  <>
+                    <Loader className="w-5 h-5 animate-spin" />
+                    {isLogin ? 'Logging in...' : 'Creating account...'}
+                  </>
                 ) : success ? (
-                  <><CheckCircle className="w-5 h-5" />{isLogin ? 'Logged in!' : 'Account created!'}</>
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    {isLogin ?  'Logged in!' : 'Account created!'}
+                  </>
                 ) : (
-                  <>{isLogin ? 'Login' :  'Create Account'}<ArrowRight className="w-5 h-5 transform transition-transform group-hover:translate-x-1" /></>
+                  <>
+                    {isLogin ? 'Login' :  'Create Account'}
+                    <ArrowRight className="w-5 h-5 transform transition-transform group-hover:translate-x-1" />
+                  </>
                 )}
               </button>
             </div>
 
+            {/* Divider */}
             <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-gray-200" /></div>
-              <div className="relative flex justify-center text-sm"><span className="px-4 bg-white text-gray-500 font-semibold">Or continue with</span></div>
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t-2 border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500 font-semibold">Or continue with</span>
+              </div>
             </div>
 
             {/* Google Button with Error Boundary */}
             <ErrorBoundary>
-              <GoogleSignInButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} />
+              <GoogleSignInButton 
+                onSuccess={handleGoogleSuccess} 
+                onError={handleGoogleError} 
+              />
             </ErrorBoundary>
           </form>
         </div>
 
+        {/* Footer */}
         <div className="mt-6 text-center">
           <div className="flex items-center justify-center gap-2 text-white/90 text-sm">
             <Shield className="w-4 h-4" />

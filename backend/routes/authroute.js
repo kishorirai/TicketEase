@@ -8,13 +8,18 @@ const User = require('../models/User');
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
-const GOOGLE_CLIENT_ID = process. env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
-console.log('🔑 Google Client ID configured:', GOOGLE_CLIENT_ID ?  'Yes ✓' : 'No ✗');
+console.log('🔑 Auth Route - Google Client ID configured:', GOOGLE_CLIENT_ID ?  'Yes ✓' : 'No ✗');
+if (GOOGLE_CLIENT_ID) {
+  console.log('🔑 Client ID prefix:', GOOGLE_CLIENT_ID.substring(0, 30) + '...');
+}
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
+// ============================================
 // POST /api/auth/signup (Regular Email/Password)
+// ============================================
 router.post(
   '/signup',
   [
@@ -57,13 +62,15 @@ router.post(
         } 
       });
     } catch (err) {
-      console.error('Signup error:', err);
+      console.error('❌ Signup error:', err);
       res.status(500).json({ error: 'Server error during signup' });
     }
   }
 );
 
+// ============================================
 // POST /api/auth/login (Regular Email/Password)
+// ============================================
 router.post(
   '/login',
   [
@@ -73,13 +80,13 @@ router.post(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ error: errors. array()[0].msg, errors: errors.array() });
+      return res.status(400).json({ error: errors.array()[0].msg, errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { email, password } = req. body;
     
     try {
-      const user = await User.findOne({ email });
+      const user = await User. findOne({ email });
       if (!user) {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
@@ -106,86 +113,101 @@ router.post(
         } 
       });
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('❌ Login error:', err);
       res.status(500).json({ error: 'Server error during login' });
     }
   }
 );
 
-// POST /api/auth/google (Google OAuth)
-router.post('/google', async (req, res) => {
+// ============================================
+// POST /api/auth/google (Google OAuth) - FIXED! 
+// ============================================
+router. post('/google', async (req, res) => {
+  console.log('\n📩 ========== Google Auth Request ==========');
+  console.log('📍 Endpoint:  POST /api/auth/google');
+  console.log('🔑 Credential present:', !!req.body.credential);
+  
   try {
     const { credential } = req.body;
 
-    console.log('📩 Google auth request received');
-    console.log('🔑 Credential present:', !!credential);
-
+    // Validation
     if (!credential) {
       console.error('❌ No credential provided');
       return res.status(400).json({ error: 'Google credential is required' });
     }
 
-    if (! GOOGLE_CLIENT_ID) {
-      console.error('❌ GOOGLE_CLIENT_ID not configured in environment');
-      return res.status(500).json({ error: 'Google authentication is not configured on server' });
+    if (!GOOGLE_CLIENT_ID) {
+      console.error('❌ GOOGLE_CLIENT_ID not configured');
+      return res.status(500).json({ 
+        error: 'Google authentication is not configured on server'
+      });
     }
 
-    console.log('🔍 Verifying Google token...');
-    console.log('🔑 Using Client ID:', GOOGLE_CLIENT_ID. substring(0, 20) + '...');
+    console.log('🔍 Verifying token with Google...');
 
     // Verify Google token
     let ticket;
+    let payload;
+    
     try {
       ticket = await googleClient.verifyIdToken({
-        idToken:  credential,
-        audience: GOOGLE_CLIENT_ID,
+        idToken: credential,
+        audience:  GOOGLE_CLIENT_ID,
       });
-      console.log('✅ Google token verified successfully');
+      payload = ticket.getPayload();
+      console.log('✅ Token verified successfully');
     } catch (verifyError) {
-      console.error('❌ Google token verification failed:', verifyError. message);
+      console.error('❌ Token verification failed:', verifyError. message);
       return res.status(401).json({ 
         error: 'Invalid Google token', 
-        details: verifyError.message 
+        message: verifyError.message
       });
     }
 
-    const payload = ticket.getPayload();
     const { email, name, sub: googleId, picture } = payload;
 
-    console.log('📦 Google user data:', { email, name, googleId:  googleId.substring(0, 10) + '...' });
+    console.log('📦 User data from Google: ');
+    console.log('   Email:', email);
+    console.log('   Name:', name);
 
     if (!email) {
-      console.error('❌ No email in Google payload');
+      console.error('❌ No email in payload');
       return res.status(400).json({ error: 'Email not provided by Google' });
     }
 
-    // Check if user exists
+    // Find or create user
+    console.log('🔍 Looking up user in database...');
     let user = await User.findOne({ email });
 
     if (!user) {
-      console.log('🆕 Creating new user with Google account');
-      user = await User. create({
+      console.log('🆕 Creating new user...');
+      user = await User.create({
         email,
         name:  name || email.split('@')[0],
         googleId,
         avatar: picture,
         password: await bcrypt.hash(Math.random().toString(36), 10),
       });
-      console.log('✅ New user created:', user._id);
+      console.log('✅ User created:', user._id);
     } else {
-      console.log('✅ Existing user found:', user._id);
-      if (! user.googleId) {
+      console.log('✅ User found:', user._id);
+      
+      // Link Google account if needed
+      if (!user.googleId) {
         user.googleId = googleId;
         user.avatar = picture || user.avatar;
         await user.save();
-        console.log('🔗 Google account linked to existing user');
+        console.log('🔗 Google account linked');
       }
     }
 
+    // Generate JWT
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    console.log('✅ Authentication successful, sending response');
-    res.json({
+    console.log('✅ Sending success response');
+    console.log('==========================================\n');
+    
+    return res.status(200).json({
       token,
       user:  {
         id: user._id,
@@ -195,18 +217,23 @@ router.post('/google', async (req, res) => {
         avatar: user.avatar,
       },
     });
-  } catch (error) {
-    console.error('❌ Google auth error:', error);
-    console.error('Error stack:', error.stack);
     
-    res.status(500).json({ 
+  } catch (error) {
+    console.error('\n❌ ========== ERROR ==========');
+    console.error('Message:', error.message);
+    console.error('Stack:', error.stack);
+    console.error('==============================\n');
+    
+    return res.status(500).json({ 
       error: 'Google authentication failed', 
-      message: error.message 
+      message: error.message
     });
   }
 });
 
+// ============================================
 // GET /api/auth/me (Get current user)
+// ============================================
 router.get('/me', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -225,16 +252,28 @@ router.get('/me', async (req, res) => {
     res.json({
       user: {
         id: user._id,
-        email: user.email,
-        name: user.name,
-        phone: user.phone,
-        avatar: user.avatar,
+        email: user. email,
+        name: user. name,
+        phone: user. phone,
+        avatar: user. avatar,
       },
     });
   } catch (err) {
-    console.error('Auth verification error:', err);
+    console.error('❌ Auth verification error:', err);
     res.status(401).json({ error: 'Invalid token' });
   }
+});
+
+// ============================================
+// GET /api/auth/test-config (Debug endpoint)
+// ============================================
+router.get('/test-config', (req, res) => {
+  res.json({
+    googleClientIdConfigured: !!GOOGLE_CLIENT_ID,
+    googleClientIdPrefix: GOOGLE_CLIENT_ID ?  GOOGLE_CLIENT_ID.substring(0, 30) + '...' : 'NOT SET',
+    jwtSecretConfigured: !!JWT_SECRET,
+    environment: process.env.NODE_ENV || 'development',
+  });
 });
 
 module.exports = router;

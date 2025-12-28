@@ -6,12 +6,11 @@ const UserSchema = new mongoose.Schema({
     required: true, 
     unique: true, 
     lowercase: true, 
-    trim:  true,
-    index: true 
+    trim: true
   },
   password: { 
-    type:  String, 
-    required: function() {
+    type: String, 
+    required: function () {
       // Password is required only if not using Google OAuth
       return !this.googleId;
     }
@@ -29,9 +28,9 @@ const UserSchema = new mongoose.Schema({
   googleId: { 
     type: String, 
     unique: true, 
-    sparse: true // Allows multiple null values
+    sparse: true
   },
-  avatar:  { 
+  avatar: { 
     type: String,
     default: '' 
   },
@@ -51,12 +50,12 @@ const UserSchema = new mongoose.Schema({
   timestamps: true 
 });
 
-// Index for faster queries
+// Create indexes
 UserSchema.index({ email: 1 });
-UserSchema.index({ googleId: 1 });
+UserSchema.index({ googleId: 1 }, { sparse: true });
 
 // Virtual for full user profile
-UserSchema.virtual('profile').get(function() {
+UserSchema.virtual('profile').get(function () {
   return {
     id: this._id,
     email: this.email,
@@ -69,12 +68,12 @@ UserSchema.virtual('profile').get(function() {
 });
 
 // Method to check if user used Google OAuth
-UserSchema.methods. isGoogleUser = function() {
+UserSchema.methods.isGoogleUser = function () {
   return !!this.googleId;
 };
 
 // Method to get safe user object (without password)
-UserSchema.methods.toSafeObject = function() {
+UserSchema.methods.toSafeObject = function () {
   return {
     id: this._id,
     email: this.email,
@@ -87,12 +86,7 @@ UserSchema.methods.toSafeObject = function() {
   };
 };
 
-// Pre-save hook to update lastLogin
-UserSchema.pre('save', function(next) {
-  if (this.isNew) {
-    this.lastLogin = new Date();
-  }
-  next();
-});
+// Enable auto-indexing
+UserSchema.set('autoIndex', true);
 
 module.exports = mongoose.model('User', UserSchema);
