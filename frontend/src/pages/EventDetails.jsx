@@ -335,7 +335,7 @@ const EventDetails = () => {
           <div className="p-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">{getTotalTickets()} tickets</p>
-              <p className="text-2xl font-bold text-gray-800">₹{getTotalAmount()}</p>
+              <p className="text-2xl font-bold text-gray-800">${getTotalAmount()}</p>
             </div>
             <button
               onClick={handleProceed}
@@ -613,7 +613,7 @@ const EventDetails = () => {
               <InfoCard 
                 icon={<DollarSign className="w-6 h-6 text-yellow-600" />} 
                 label="Price Range" 
-                value={getMinPrice() === getMaxPrice() ? `₹${getMinPrice()}` : `₹${getMinPrice()} - ₹${getMaxPrice()}`}
+                value={getMinPrice() === getMaxPrice() ? `$${getMinPrice()}` : `$${getMinPrice()} - $${getMaxPrice()}`}
                 gradient="from-yellow-50 to-yellow-100"
               />
             </div>
@@ -972,11 +972,11 @@ function TicketSelector({ ticketCategories, selectedTickets, handleTicketChange 
                 <div className="flex items-center gap-2">
                   {ticket.originalPrice && ticket.originalPrice > ticket.price && (
                     <span className="text-sm text-gray-400 line-through">
-                      ₹{ticket.originalPrice}
+                      ${ticket.originalPrice}
                     </span>
                   )}
                   <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                    ₹{ticket.price}
+                    ${ticket.price}
                   </span>
                 </div>
               </div>
@@ -1075,10 +1075,10 @@ function BookingSummary({ ticketCategories, selectedTickets, getTotalTickets, ge
                 <div className="flex-1">
                   <p className="font-semibold">{ticket?. name}</p>
                   <p className="text-xs text-white/70">
-                    ₹{ticket?.price} × {count}
+                    ${ticket?.price} × {count}
                   </p>
                 </div>
-                <span className="font-bold text-lg">₹{ticket ?  ticket.price * count : 0}</span>
+                <span className="font-bold text-lg">${ticket ?  ticket.price * count : 0}</span>
               </div>
             );
           })}
@@ -1087,7 +1087,7 @@ function BookingSummary({ ticketCategories, selectedTickets, getTotalTickets, ge
         <div className="bg-white/20 backdrop-blur-sm rounded-xl p-5 border-2 border-white/30">
           <div className="flex justify-between items-center mb-2">
             <span className="text-white text-lg font-semibold">Total Amount</span>
-            <span className="text-white text-4xl font-bold">₹{getTotalAmount()}</span>
+            <span className="text-white text-4xl font-bold">${getTotalAmount()}</span>
           </div>
           <p className="text-white/90 text-sm flex items-center gap-2">
             <Ticket className="w-4 h-4" />
