@@ -142,16 +142,9 @@ export default function Header() {
 
                       {/* Menu Items */}
                       <div className="py-2">
+                        
                         <Link
-                          to="/my-bookings"
-                          className="flex items-center gap-3 px-5 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all group"
-                          onClick={() => setMenuOpen(false)}
-                        >
-                          <Calendar className="w-5 h-5 text-purple-400 group-hover:text-purple-300" />
-                          <span className="font-semibold">My Bookings</span>
-                        </Link>
-                        <Link
-                          to="/admindashboard"
+                          to="/profile"
                           className="flex items-center gap-3 px-5 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all group"
                           onClick={() => setMenuOpen(false)}
                         >

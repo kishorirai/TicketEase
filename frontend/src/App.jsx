@@ -8,6 +8,7 @@ import EventDetailsPage from './pages/EventDetails';
 import BookingsPage from './pages/Bookings';
 import TicketEaseAuth from './pages/Authpage';
 import BookingSuccess from './pages/BookingSuccess';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -19,21 +20,11 @@ function App() {
           <Route path="/events" element={<EventListingPage />} />
           <Route path="/events/:id" element={<EventDetailsPage />} />
           <Route path="/bookings" element={<BookingsPage />} />
-          
-          {/* Success page route - CORRECT PATH */}
           <Route path="/bookings/success" element={<BookingSuccess />} />
-          
-          {/* Redirect old routes for backwards compatibility */}
-          <Route path="/bookingsuccess" element={<Navigate to="/bookings/success" replace />} />
-          <Route path="/bookings/bookingsuccess" element={<Navigate to="/bookings/success" replace />} />
-          
-          
-
-          {/* canonical auth route used by EventDetails */}
           <Route path="/auth" element={<TicketEaseAuth />} />
-
-          {/* keep /Authpage working for older links by redirecting to /auth */}
           <Route path="/Authpage" element={<Navigate to="/auth" replace />} />
+          <Route path="/profile" element={<Profile />} />   
+
         </Routes>
       </div>
     </Router>
