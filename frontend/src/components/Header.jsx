@@ -79,7 +79,7 @@ export default function Header() {
           <div className="flex justify-between items-center">
             {/* Logo */}
             <Link 
-              to="/events" 
+              to="/" 
               className="flex items-center gap-3 group"
             >
               <div className="relative">
