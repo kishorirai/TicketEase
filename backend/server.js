@@ -24,6 +24,7 @@ requiredEnvVars.forEach((key) => {
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://ticket-booking-synq.onrender.com/api',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
