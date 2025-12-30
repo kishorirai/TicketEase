@@ -4,17 +4,10 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
-
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-
-console.log('🔑 Auth Route - Google Client ID configured:', GOOGLE_CLIENT_ID ?  'Yes ✓' : 'No ✗');
-if (GOOGLE_CLIENT_ID) {
-  console.log('🔑 Client ID prefix:', GOOGLE_CLIENT_ID.substring(0, 30) + '...');
-}
-
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 

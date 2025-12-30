@@ -305,7 +305,7 @@ Thank you for choosing TicketEase!
             Browse Events
           </button>
           <button 
-            onClick={() => navigate("/my-bookings")}
+            onClick={() => navigate("/profile")}
             className="flex items-center justify-center gap-2 bg-purple-100 text-purple-700 py-3 rounded-xl font-semibold hover:bg-purple-200 transition"
           >
             View My Bookings →
