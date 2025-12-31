@@ -91,6 +91,18 @@ JWT_SECRET=your_secret_key
 ---
 
 ## 📸 Screenshots
+<img width="936" height="410" alt="image" src="https://github.com/user-attachments/assets/d25d8066-3aba-4e90-b895-3355125ef47b" />
+
+
+<img width="374" height="296" alt="image" src="https://github.com/user-attachments/assets/64908f3d-79b1-4df2-9ab6-41bd74ea124d" />
+
+<img width="890" height="401" alt="image" src="https://github.com/user-attachments/assets/85e68b57-e8cd-4bd2-999d-f8cd6a33104e" />
+
+<img width="377" height="401" alt="image" src="https://github.com/user-attachments/assets/eef09f12-cece-4825-ac89-d07e6074f415" />
+
+<img width="263" height="398" alt="image" src="https://github.com/user-attachments/assets/135e8aad-1b1e-4a06-abd9-90f5c810399b" />
+
+
 
 
 
